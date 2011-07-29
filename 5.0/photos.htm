@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Photos</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+
+</head>
+<body>
+	<h1>Live Experiments | Photos</h1>
+	<div id="signin"></div>
+	<button onclick="getPhotos();">Get your photos</button>
+	<pre></pre>
+<script>
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	function getPhotos(){
+		if(WL.getSession() === null || WL.getSession().scope.indexOf("wl.photos") === -1){
+			WL.login({scope:"wl.photos"}, getPhotos);
+			return;
+		}
+
+		WL.api( "me/albums", function(r){
+			// Friends
+			var pre = document.getElementsByTagName("pre")[0];
+			pre.innerHTML = '';
+
+			if(r.error){
+				s = r.error.message;
+			}
+			else {
+				for(var i=0;i<r.data.length;i++){
+					(function(title){
+						var s='';
+						WL.api( r.data[i].id + '/files', function(r){
+							for(var i=0;i<r.data.length;i++){
+								s += '<li><img src="'+ r.data[i].picture +'" style="width:48px;"/><q>'+r.data[i].name+'</q></li>';
+							}
+							pre.innerHTML += "<h2>Album / " + title + "</h2>" + s;
+						});
+					})(r.data[i].name);
+				}
+			}
+		});
+	};
+
+	
+</script>
+</body>
+</html>

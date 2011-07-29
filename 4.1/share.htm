@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wl="http://apis.live.net/js/2010">
+<head>
+	<title>Live Experiments | Share</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+	<wl:app 
+		channel-url="channel.htm" 
+		callback-url="connect.php"
+		client-id="000000004C03D93B" 
+		scope="WL_Contacts.View,WL_Profiles.View,Messenger.Signin"
+	></wl:app>
+	<h1>Live Experiments | Share</h1>
+	<blockquote>
+		<p>Click share button below, and pick an online friends to send an IM too.</p>
+	</blockquote>
+	<!-- The Sharing Control gives users the opportunity to share site content with their contacts. -->                 
+	<wl:share dialog-button-label="Share" picker-label="Share with your contacts" message="Check out my site!" max-selection-count="15"></wl:share>
+</body>
+</html>

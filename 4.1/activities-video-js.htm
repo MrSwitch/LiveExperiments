@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Activity | Video</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script type="text/javascript">
+
+	Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles", "microsoft.live.services"], function () {
+		Microsoft.Live.App.initialize({
+			channelurl:"channel.htm",
+			callbackurl:connect.url,
+			clientid:connect.clientId,
+			scope:"WL_Profiles.View,WL_Contacts.View,WL_Activities.Update"
+		});
+	    $create(Microsoft.Live.UI.SignIn,
+	        {},
+	        {},
+	        {},        
+	        $get('signin')
+	    );
+	});
+	
+
+	/**
+	 * Adds the current page to the Users activity feed.
+	 * @param title (optional)	Title, document.title is the default
+	 * @param desc (optional)	Description, meta[name=description] is the default
+	 */
+    function addVideo(previewLink,alternativeLink,title){
+
+		// Is the user signed in?
+		if( Microsoft.Live.App.get_auth().get_state() !== Microsoft.Live.AuthState.authenticated ){
+			alert("Please signin");
+			return;
+		}
+
+    	// Get the activities resource
+        Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.myActivities, {}, function(e){
+        	
+        	// Get the Activities Resource
+        	var myActivitiesCollection = e.get_data();
+
+	        // Build the Activity Object
+	        var videoObject = new Microsoft.Live.Services.VideoActivityObject(previewLink, alternativeLink, title);
+	        
+	        // Add the Activity Object to the Activity Template
+	        var newActivity = new Microsoft.Live.Services.AddVideoActivity([videoObject], window.location.href);
+	        newActivity.set_applicationLink(window.location.href);
+	        
+	        // Add the completed Activity to the Activity Resource
+            myActivitiesCollection.add(newActivity);
+            
+            // Save the changes
+            myActivitiesCollection.save(function(e){
+	            for (var i = 0; i < e.get_results().length; i++) {
+	                var data = e.get_results()[i];
+	                if (data.get_resultCode() !== Microsoft.Live.AsyncResultCode.success) {
+	                    alert("Error saving data: " + data.get_error());
+	                    continue;
+	                }
+	                // Reload collection
+	                alert("You shared your activity successfully.");
+	            }
+            });
+        });
+    }
+</script>
+</head>
+
+<body>
+	<h1>Live Experiments | Activity | Video</h1>
+
+	<blockquote>
+		<p>Use the buttons below to publish a new video link to the users activity list <span id="signin"></span></p>
+		<h2>... a video, for illustration purposes</h2>
+		<video id="video" controls="controls" title="Test video" width="300" src="http://cdn.kaltura.org/apis/html5lib/kplayer-examples/media/bbb_trailer_iphone.m4v" poster="http://cdn.kaltura.org/apis/html5lib/kplayer-examples/media/bbb480.jpg"></video>
+	</blockquote>
+
+    <button onclick="var video = document.getElementById('video'); addVideo(video.poster, window.location.href, video.title)">TEST: Add a link to the video</button>
+</body>
+</html>

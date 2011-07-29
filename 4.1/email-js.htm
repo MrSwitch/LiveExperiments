@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Email</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<style>
+form {
+	font-family:"Courier New", Courier, monospace;
+	white-space:pre;
+}
+form *{
+	vertical-align:middle;
+	width:300px;
+}
+form button{
+	width:auto;
+}
+form select .notice{
+	background-color:#FFCCCC;
+	border:1px solid #FF0000;
+}
+</style>
+<script>
+
+	Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+		Microsoft.Live.App.initialize({
+			channelurl:"channel.htm",
+			callbackurl:connect.url,
+			clientid:connect.clientId,
+			scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+			onload: "appLoaded"
+		});
+	    $create(Microsoft.Live.UI.SignIn,
+	        {},
+	        {},
+	        {},        
+	        $get('signin')
+	    );
+	});
+	
+	/**
+	 * When the user has signed in we trigger the getContacts function
+	 */
+	function appLoaded(){
+		var auth = Microsoft.Live.App.get_auth();
+	
+		auth.add_propertyChanged( function(sender,e){
+		    if (e.get_propertyName() != 'state') return;
+		    if (auth.get_state()===Microsoft.Live.AuthState.authenticated){
+				getContacts();
+			}
+		});
+	};
+	
+	/**
+	 * Publish a users contents to the #select element
+	 */
+	function getContacts(){
+
+		var sel = document.getElementById("contacts");
+		sel.options[0].innerHTML = "Loading contacts...";
+
+		Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.contacts, {}, function(e){
+			
+			var d = e.get_data();
+			if(!d.hasNextPage){
+				alert("Whoops an error occured");
+				getContacts();
+				return;
+			}
+	
+			(function contactHandler(){
+				if( d.hasNextPage() ){
+					d.loadNextPage(contactHandler);
+				}
+				else {
+
+					var a=[];
+	
+					for (var i = 0, contact=null; i < d.get_length(); i++) {
+						contact = d.getItem(i);
+						if(contact.get_cid()&&contact.get_formattedName())
+							a.push(contact);
+					}
+	
+					// Order results
+					a.sort(function(a,b){
+						return (a.get_formattedName()&&(a.get_formattedName().toLowerCase()>b.get_formattedName().toLowerCase())?1:-1);
+					})
+					
+					sel.innerHTML = "";
+					
+					for (var i = 0; i < a.length; i++) {
+						var opt = document.createElement("option");
+						opt.innerHTML = a[i].get_formattedName();
+						opt.value = a[i].get_cid();
+
+						sel.options.add(opt);
+					}
+				}
+			})();
+		});
+	}
+	
+	/**
+	 * Triggered when the form is submitted.
+	 * This posts emails to the selected users.
+	 */
+	function sendEmail(form) {
+		var subject = form.subject.value,
+			message = form.message.value,
+			from = form.from.value,
+			contacts = []; // array of CID's
+			
+		// get contacts
+		for(var i=0;i<form.contacts.children.length;i++){
+			if( form.contacts.children[i].selected ){
+				contacts.push(form.contacts.children[i].value);
+			}
+		}
+		
+		if(contacts.length===0){
+			alert("Please select a recipient");
+			return;
+		}
+
+		// Build email object
+		var invite = Microsoft.Live.$create_EmailInvitation(from, subject, message, contacts);
+
+		// Post email object
+		Microsoft.Live.App.get_dataContext().sendInvitations([invite], function(e){
+			alert((e.get_resultCode() === Microsoft.Live.AsyncResultCode.success)?"Yippee, Success! now check the recipients inbox":"Whoops, Failed!");
+		});
+	}
+
+</script>
+</head>
+<body>
+
+	<h1>Live Experiments | Email</h1>
+	
+	<blockquote>
+		<p>Use the form below to send emails via the Messenger Connect API, you must be connected first <span id="signin"></span></p>
+	</blockquote>
+	
+	<form onsubmit="sendEmail(this); return false;">
+		To         <select id="contacts" name="contacts" multiple="multiple"><option class="notice">Please signin</option></select> (Messenger contacts only)
+		Subject    <input type="text" name="subject" value="Test email sent from Messenger Connect JS API"/>
+		Message    <textarea rows="7" name="message">This email was sent to you by your Messenger friend who is running a test at http://liveexperiments.com/</textarea>
+		From       <input type="text" name="from" value="noreply@liveexperiments.com"/> (applications email)
+		<button type="submit">Post</button>
+	</form>
+
+</body>
+</html>

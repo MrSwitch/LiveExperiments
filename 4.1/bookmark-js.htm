@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Activity | Bookmark</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script type="text/javascript">
+
+	Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles", "microsoft.live.services"], function () {
+		Microsoft.Live.App.initialize({
+			channelurl:"channel.htm",
+			callbackurl:connect.url,
+			clientid:connect.clientId,
+			scope:"WL_Profiles.View,WL_Contacts.View,WL_Activities.Update",
+			onload: "appLoaded"
+		});
+	    $create(Microsoft.Live.UI.SignIn,
+	        {},
+	        {},
+	        {},        
+	        $get('signin')
+	    );
+	});
+	
+	/**
+	 * Load app
+	 */
+	var loaded = false;
+	function appLoaded(){
+		loaded = true;
+	}
+
+
+	/**
+	 * BookMark Adds the current page to the Users activity feed.
+	 * @param title (optional)	Title, document.title is the default
+	 * @param desc (optional)	Description, meta[name=description] is the default
+	 */
+    function bookmark(title, desc){
+
+		if(!loaded){
+			alert("Please wait for loading");
+			return;
+		}
+
+    	// Get the activities resource
+        Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.myActivities, {}, function(e){
+        	
+        	// Get the Activities Resource
+        	var myActivitiesCollection = e.get_data();
+
+	        // Build the Activity Object
+	        var bookmarkObject = new Microsoft.Live.Services.BookmarkActivityObject(window.location.href,title, desc);
+	        
+	        // Add the Activity Object to the Activity Template
+	        var newActivity = new Microsoft.Live.Services.AddBookmarkActivity([bookmarkObject], window.location.href);
+	        newActivity.set_applicationLink(window.location.href);
+	        
+	        // Add the completed Activity to the Activity Resource
+            myActivitiesCollection.add(newActivity);
+            
+            // Save the changes
+            myActivitiesCollection.save(function(e){
+	            for (var i = 0; i < e.get_results().length; i++) {
+	                var data = e.get_results()[i];
+	                if (data.get_resultCode() !== Microsoft.Live.AsyncResultCode.success) {
+	                    alert("Error saving data: " + data.get_error());
+	                    continue;
+	                }
+	                // Reload collection
+	                alert("You shared your activity successfully.");
+	            }
+            });
+        });
+    }
+</script>
+</head>
+
+<body>
+	<h1>Live Experiments | Activity | Bookmark</h1>
+	
+	<blockquote>
+		<p>Use the buttons below to publish a new bookmark activity to the feed <span id="signin"></span></p>
+	</blockquote>
+
+    <button onclick="bookmark('test bookmark title','Test description of bookmark')">Bookmark this page</button>
+</body>
+</html>

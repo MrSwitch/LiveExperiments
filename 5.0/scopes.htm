@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Scopes</title>
+	<link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+	<h2>Adding new services and understanding </h2>
+	<h2>Profile</h2>
+	<h3>Picture</h3>
+	<pre>https://beta.apis.live.net/v5.0/<strong><em>id</em></strong>/picture</pre>ar
+	<p>e.g. <img src="https://beta.apis.live.net/v5.0/ab56a3585e01b6db/picture" style="width:24px;"/></p>
+	
+	<h2>Native Apps<2>
+	<pre>http://oauth.live.com/desktop</pre>
+	
+	<h2>Signin</h2>
+	<pre>http://connectdemos.com/news/connect.htm#
+<strong>access_token</strong>=EwBIAq1DBAAUlbRWyAJjK5w968Ru3Cyt%2f6GvwXwAAf4qwZTsUVbANLycpyX0c%2ff%2b436C9zfP7M7t6P9YrWMLCFJ2yfSbVPPI%2fpGNhHLEz3ZhI6%2fIDQZ91OAqkHLDx1WXRqBKLtoZTHr5v8RJSUI5tLwykYOUBt6aQ4CAB030YyMmxPEs5bYTFXEAyzxNDizdsof%2fhio9za1CO1WBVeMz5uzb2zVu3zPUEZtCYCLu5F9GHGZoFUc0TenjYgKKKc1499IDyQYoDFXN5sB%2fOwseKmqRetYnf1FKGsPeIc4YlUzBZCoOOBgYJZx7c53UhUfNhqzGSPJ8emB9NtJTcPI4HppK%2fxwOH0iPf%2f1yXmWiuhvP84EEPd8DmLOCAbjOKEADZgAACHsblWYpgF4sGAG%2bSC%2fmhTPsdXJfh6afDCHud4mNqJ5cd1MBji4kNsxM9IJhWDabAK4JJhSg1Xb%2bfl4N7Si2C6IzEw4%2biOS2qbNp9%2fR9HHK7VQErY90F3c5SeQlz0bei%2f5ANh2Ti1aorlpjtto7PaXEdKfcHfQfCalaQ48wKkL4Ko5Puinjuq4Ho4l0vKLxNFBwm7Mtp3KWZDa5xrVfvRQQh33PTkzUcLxGBc9VMkmCvOBsz%2f2l7sOfYDOA7CLzdY1sgpGbuOTSD6tqHcdDU9fhwOOqZ4w%2f3id260oP9eHdBwQIcFZngw4px8BRPiiGM4ZBgoeHtaB6xj9fTFFa2cijYyyVS0JzJP0GRRXjKWcW7tyXttKMBZqyghbMbXjia3yviAAA%3d&
+<strong>token_type</strong>=bearer&
+<strong>authentication_token</strong>=eyJhbGciOiJIUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiMCJ9.eyJ2ZXIiOjEsICJpc3MiOiJ1cm46d2luZG93czpsaXZlaWQiLCAiZXhwIjoxMzA2OTUwMTQ2LCAiYXVkIjoiY29ubmVjdGRlbW9zLmNvbSIsICJ1aWQiOiI0YTE3YzI1MjdiMDY3MWQxOGM0YTg5ZDU0MThiNjY1ZCIsICJ1cm46d2luZG93czpwYWNrYWdlc2lkIjoiIn0.a-9fsRBTcvdv4NrrBpKddxRl7FnQ6wIQlAvg9kUsYDM&
+<strong>expires_in</strong>=3600&
+<strong>scope</strong>=wl.share%20wl.events_create%20wl.basic%20wl.signin%20wl.birthday%20wl.emails%20wl.phone_numbers%20wl.postal_addresses%20wl.contacts_photos&
+<strong>state</strong>=display%3dpopup%26request_ts%3d1306863735778%26response_type%3dtoken
+</pre>
+
+
+<h2>Scopes</h2>
+	<table>
+		<tr>
+			<th>Scope</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlapplications"><b>wl.applications</b></a></p>
+			</td>
+			<td>
+			<p>Enable read access to a user&#39;s applications registered with 
+			Messenger Connect.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlapplicationscreate"><b>wl.applications_create</b></a></p>
+			</td>
+			<td>
+			<p>Enables the registration of new applications with Messenger 
+			Connect on behalf of a user.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlbasic"><b>wl.basic</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s public and basic profile 
+			information such as gender.</p>
+			<p>Enable read access to a user&#39;s list of contacts and friends.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlbirthday"><b>wl.birthday</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s birthday information including 
+			birth day, month, and year.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlcontactsbirthday"><b>wl.contacts_birthday</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s contacts&#39; birth day and birth 
+			month.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlcontactsphotos"><b>wl.contacts_photos</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s friends&#39; photos, videos, and 
+			albums.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlemails"><b>wl.emails</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s personal, preferred, and business 
+			email addresses.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wleventscreate"><b>wl.events_create</b></a></p>
+			</td>
+			<td>
+			<p>Enables the creation of events on a user&#39;s calendar.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlofflineaccess"><b>wl.offline_access</b></a></p>
+			</td>
+			<td>
+			<p>Enables access to a user&#39;s information, and creating new objects 
+			on behalf of a user, after he or she has ended the corresponding web 
+			browsing session.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlphonenumbers"><b>wl.phone_numbers</b></a></p>
+			</td>
+			<td>
+			<p>Enables access to a user&#39;s personal, business, and mobile phone 
+			numbers.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlphotos"><b>wl.photos</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s photos, videos, and albums.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlpostaladdresses"><b>wl.postal_addresses</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s postal addresses.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlshare"><b>wl.share</b></a></p>
+			</td>
+			<td>
+			<p>Enables the creation of activities on a user&#39;s activity feed and 
+			personal status message.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlsignin"><b>wl.signin</b></a></p>
+			</td>
+			<td>
+			<p>Enables automatic site sign-in for users who are already signed 
+			in to Messenger Connect.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p><a href="#wlworkprofile"><b>wl.work_profile</b></a></p>
+			</td>
+			<td>
+			<p>Enables read access to a user&#39;s employer and work position 
+			information.</p>
+			</td>
+		</tr>
+	</table>
+
+
+
+</body>
+
+</html>

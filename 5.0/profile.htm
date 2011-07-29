@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Profile</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+
+</head>
+<body>
+	<h1>Live Experiments | Profile</h1>
+	<div id="signin"></div>
+	<pre></pre>
+<script>
+
+	/**
+	 * Add a callback to be fired when the user is signed in.
+	 * Place this before WL.init i you want this to load on page load.
+	 */
+	WL.Event.subscribe("auth.login", function (e){
+		if(e.status === "unknown"){
+			return;
+		}
+		WL.api("me", function(r){
+			// Get the access token to additionally grab the pictures of a user who's profile is set to Private
+			var t=encodeURIComponent(WL.getSession().access_token),
+				s='<img src="https://apis.live.net/v5.0/'+r.id+'/picture?access_token='+t+'" style="width:24px;"/>';
+
+			// loop through and print out each key=>value pair.
+			for(var x in r ){
+				s += '<li>'+x+': <q>'+r[x]+'</q></li>';
+			}
+			document.getElementsByTagName("pre")[0].innerHTML = s;
+		});
+	});
+
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	WL.ui({ name: "signin", element: "signin" });
+
+</script>
+</body>
+</html>

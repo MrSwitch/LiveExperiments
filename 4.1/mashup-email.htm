@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Messenger Connect: Invite API</title>
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+  	<script src="connect.php"></script> <!-- this script returns the credentials for the current site and stores them in the `token` object -->
+	<script type="text/javascript">
+	
+Microsoft.Live.Core.Loader.load(["messenger.ui",'messenger.ui.styles.core', 'microsoft.live.ui.styles'], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm" ,
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload:"appload"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+	
+function appload(){
+	var auth = Microsoft.Live.App.get_auth();
+
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'state') return;
+	    if (auth.get_state()===Microsoft.Live.AuthState.authenticated){
+	    	$('body').addClass('signedin');
+	    	$('form input[name=people]').val('Loading Contacts');
+			getContacts();
+			getName();
+		}
+	});
+};
+
+function getContacts(){
+	Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.contacts, {}, function(e){
+       var d = e.get_data();
+	    if (e.get_resultCode() !== Microsoft.Live.AsyncResultCode.success) {
+	        $("input[name=people]").addClass('failed').val('Error loading contact');
+	        return;
+	    }
+
+       (function contactHandler(){
+          if( d.hasNextPage() ){
+                 d.loadNextPage(contactHandler);
+          }
+          else {
+          		var a = [];
+                 for (var i = 0, c=null; i < d.get_length(); i++) {
+                 	var n = d.getItem(i).get_formattedName();
+                 	if(n&&d.getItem(i).get_cid())
+	                	a.push({value:d.getItem(i).get_cid(),label:n});
+				}
+				$("input[name=people]").autocomplete({source:a, multiple:true, select : function(e,ui){
+					$("<span class='tab' >"+ui.item.label+"<button>x</button></span>")
+						.attr('data-cid',ui.item.value)
+						.appendTo("#contacts")
+						.find('button')
+						.click(function(){$(this).parent().remove();})
+					$el = $(this);
+					setTimeout( function(){ $el.val(''); }, 100);
+				}}).attr({placeholder:'Search contacts',disabled:false,value:''});
+			}
+		})()
+	});
+}
+function getName(){
+	Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.profile, {}, function(e){
+	    if (e.get_resultCode() !== Microsoft.Live.AsyncResultCode.success) {
+	        alert("Profile failed to load: " + e.get_error());
+	        return;
+	    }
+	    var p = e.get_data().get_profile();
+        $('form input[name=from]').val(p.get_firstName()+' '+p.get_lastName());
+	});
+}
+
+
+
+$(document).ready(function(){
+
+	// Form
+	$("form textarea").html($("form textarea").html()+window.location.href);
+
+	// Create our code samples directly from the scripts in the page
+	// this is one of my favourite demonstration hacks and makes the source code very easy to read
+	$('body script').each(function(){
+		$("<pre></pre>").text($(this).html().replace("\n",'')).insertAfter(this).highlight();
+	});
+	$('form').submit(function(){
+		
+		// get the list of ID's
+		var cids= [];
+		$('span[data-cid]',this).each(function(){
+			cids.push($(this).attr('data-cid'));
+		})
+		if(cids.length===0){
+			alert("Please signin and select some contacts");
+			return false;
+		}
+		var $form = $(this).addClass('posting');
+		$form.find('.status').text('');
+		var invite = Microsoft.Live.$create_EmailInvitation("noreply@liveexperiments.com", $('input[name=subject]',this).val(), $('textarea[name=message]',this).val(), cids);
+		var invitations = [invite];
+		Microsoft.Live.App.get_dataContext().sendInvitations(invitations, function(e){
+			$form.removeClass('posting').find('.status')
+				.text((e.get_resultCode() === Microsoft.Live.AsyncResultCode.success)?"Yippee, Success!":"Whoops, Failed!");
+		});
+
+		// cancel default
+		return false;
+	});
+});
+
+	$('.modal-close').live('click',function(){$(".modal").fadeOut('fast');});
+	$('.modal-open').live('click',function(){$(".modal").fadeIn('fast');});
+
+	</script>
+<style>
+body{
+	margin:0;
+	padding:0;
+	width:100%;
+	min-height:100%;
+
+	font-family:'Molengo', Arial, Helvetica, sans-serif;
+	color:white;
+	position:fixed;
+	bottom:0;
+	height:100%;
+	font-size:12px;
+}
+button{
+	border:none;
+	background:#222222;
+	filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0,startColorstr='#30FFFFFF', endColorstr='#30000000');
+	background:-webkit-gradient(linear,left top, left bottom, from(rgba(255,255,255,0.2)), to(rgba(0,0,0,0.2)), 
+				color-stop(50%,rgba(255,255,255,0)), 
+				color-stop(50%,rgba(0,0,0,0)));
+	background: -moz-linear-gradient(rgba(255,255,255,0.2) 0,rgba(255,255,255,0) 49%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.2) 100%);
+
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 1px;
+    -webkit-box-shadow: rgba(255, 255, 255, 0.1) 0 1px inset,
+                        rgba(0, 0, 0, 0.4) 0px 1px 1px;
+    -moz-box-shadow: rgba(255, 255, 255, 0.1) 0 1px inset,
+                        rgba(0, 0, 0, 0.4) 0px 1px 1px;
+	text-shadow:rgba(0, 0, 0, 0.4) 0px 1px;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	padding:3px 6px;
+	color:white;/*IE*/
+	color:rgba(255,255,255,0.5);
+	-webkit-user-select:none;
+	-moz-user-select:none;
+	font-family:"Lucida Grande", Arial, sans-serif;
+	font-size:13px;
+	cursor:pointer;
+	vertical-align: middle;
+}
+/*
+	button:hover{
+		color:white;
+		-moz-box-shadow: 0 1px 2px rgba(255,255,255,0.3);
+		-webkit-box-shadow: 0 1px 2px rgba(255,255,255,0.3);
+	}
+*/
+	button:active,button.active{
+		box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 1px;
+	    -webkit-box-shadow: rgba(255, 255, 255, 0.2) 0 1px,
+	                        rgba(0, 0, 0, 0.7) 0px 1px 3px inset,
+	                        rgba(0, 0, 0, 0.1) 0px -5px 12px inset;
+	    -moz-box-shadow: rgba(255, 255, 255, 0.2) 0 1px,
+	                        rgba(0, 0, 0, 0.7) 0px 1px 3px inset,
+	                        rgba(0, 0, 0, 0.1) 0px -5px 12px inset;
+		text-shadow:white 0 0 5px;
+		color:white;
+	}
+/* Modal */
+.modal{
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	position:absolute;
+	z-index:10001;
+	text-align:center;
+	margin-top:30%;
+}
+.modal .modal-container{
+	vertical-align:middle;
+	text-align:left;
+	margin:auto;
+	width:400px;
+	background:#333;	
+
+	border-radius:10px;
+	/* -moz-border-radius:10px; /* gets funky when overlaying flash */
+	padding:10px;
+	box-shadow:2px 2px 10px black;
+	-webkit-box-shadow:2px 2px 15px black;
+}
+	.modal h2{
+		font-size:1.5em;
+		font-weight:bold;
+	}
+		.modal h2 a{
+			color:white;
+		}
+		.modal h2 a:hover{
+			color:#ccc;
+		}
+	.modal-close{
+		float:right;
+		font-weight:bold;
+	}
+
+.modal-bg{
+	width:100%;
+	height:100%;
+	margin:0;
+	padding:0;
+	top:0;
+	left:0;
+	position:fixed;
+	background-color:black;
+	opacity:0.8;
+	filter:alpha(opacity=80);
+	z-index:10000;
+}
+iframe.modal-bg{
+	opacity:0;
+	filter:alpha(opacity=0);
+}
+
+form label{
+	width:100px;
+	display:inline-block;
+	vertical-align:top;
+}
+
+div.input{
+	display:inline-block;
+}
+
+</style>
+</head>
+
+<body>
+<div style="position:absolute;left:45%;top:45%;">
+	<button class="modal-open" style="font-size:2em;font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;background-color:white;"><img src="https://secure.shared.live.com/~Live.SiteContent.ID.HMCustomization/~1.0.20/~/~/~/~/mai/images/hotmail.png"/></button>
+</div>
+
+<div class="modal" style="display:none;">
+	<div class="modal-container">
+		<button class="modal-close">&#10005;</button>
+		<h2>Invite</h2>
+		<div class="column">
+			
+			<form>
+				<label>To</label>     <input type="text" name="people" value="Signin to load contacts" disabled="true"/><div id="signin" style="display:inline-block;"></div><br /><div id="contacts" style="margin-left:100px;"></div>
+				<label>Subject</label><input type="text" name="subject" value="Have you seen Messenger Connect?"/><br />
+				<label>Message</label>
+<textarea name="message" rows="6" style="width:395px;" >
+Hi, 
+The API lets you send emails like this one!
+Take a peek at 
+</textarea><br />
+				<button type="submit">Post</button> <span class="status"></span>
+			</form>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

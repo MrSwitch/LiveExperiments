@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"/> 
+	<link rel="stylesheet" href="style.css" />
+	<title>Live Experiments</title>
+	<!--[if lt IE 9]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+<a href="http://github.com/mrswitch/LiveExperiments"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/30f550e0d38ceb6ef5b81500c64d970b7fb0f028/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub"></a>
+
+<header>
+	<h1 style="overflow:hidden;white-space:nowrap;">Live Experiments 
+	<span style="font-family: 'Courier New', Courier, monospace;color: #808080;font-size:small;font-weight:normal;">(that's <a href="http://dev.live.com/">Windows <u>Live</u></a>, vivisection is not practiced here)</span></h1>
+</header>
+
+<blockquote>
+	<p>All the things you can do with Windows Live API tools (aka Messenger Connect). In the table, the right-hand side
+	provides demo's in different flavours dependent on your setup and requirements. </p>
+	<p>A good place to start is the <a href="5.0/start.htm">getting started guide (v5.0)</a> which explains a basic 
+	signin to grant your application permission to perform the actions in 
+	this table.</p>
+</blockquote>
+
+<table>
+	<colgroup>
+		<col/>
+		<col style="background-color:#FFFFEE;"/>
+		<col style="background-color:#EEFFFF;"/>
+	</colgroup>
+	<thead>
+	<tr>
+		<th rowspan="2"><h2>Quick demos</h2></th>
+		<th rowspan="2"><span title="Build links to resources on live.com">deep<br>links</span></th>
+		<th rowspan="2">V5.0 (<a href="5.0/start.htm">start guide</a>)</th>
+		<th colspan="3">V4.1 (<a href="4.1/start.htm">start guide</a>)</th>
+	</tr>
+	<tr>
+		<th>&lt;wl:*&gt; Widgets</th>
+		<th>MC Javascript API</th>
+		<th>Custom/REST</th>
+	</tr>
+	</thead>
+	<tbody>
+		<tr><th colspan="6">Authentication</th></tr>
+		<tr><td>Signin, create a signin button </td><td>
+			&nbsp;</td><td>
+			<a href="5.0/signin.htm">demo</a>,
+			<a href="5.0/signin2.htm">demo</a></td><td><a href="4.1/signin.htm">demo</a></td><td><a href="4.1/signin-js.htm">demo</a>, <a href="4.1/signin-js2.htm">demo2</a></td><td><a href="4.1/signin-custom.htm">demo</a></td></tr>
+		<tr><td>Signed in state (retrieve and monitor)</td><td>&nbsp;</td><td>&nbsp;</td><td></td><td><a href="4.1/state-js.htm">demo</a></td><td></td></tr>
+		<tr><td>Is Live user? (detects before signin)</td><td>&nbsp;</td><td>&nbsp;</td><td></td><td><a href="4.1/detect-js.htm">demo</a></td><td></td></tr>
+		<tr><td>Get my Profile (name, email, picture, etc...)</td><td>&nbsp;</td><td>
+			<a href="5.0/profile.htm">demo</a></td><td><a href="4.1/profile.htm">demo</a>, <a href="4.1/profile-userinfo.htm">demo2</a></td><td><a href="4.1/profile-js.htm">demo</a></td><td><a href="4.1/profile-custom.htm">demo</a></td></tr>
+		
+		<tr><th colspan="6">Contacts/Friends</th></tr>
+		<tr><td>Get a list of my friends</td><td>&nbsp;</td><td>
+			<a href="5.0/friends.htm">demo</a></td><td><a href="4.1/friends.htm">demo</a></td><td><a href="4.1/friends-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Send Email to a friend</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/email-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Send IM to a friend</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/share.htm">demo</a></td><td>&nbsp;</td><td>&nbsp;</td></tr>
+		
+		<tr><th colspan="6">Activities, Publish Status/Micro-Blogging</th></tr>
+		<tr><td>Get my Activities</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/activities-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Get friends Activities</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/friendsactivities-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Publish status message</td><td><a href="basic/activity.htm">demo</a></td><td>
+			<a href="5.0/share.htm">demo</a></td><td><a href="4.1/status.htm">demo</a></td><td><a href="4.1/status-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Publish a bookmark link</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/bookmark-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Publish a link to a video</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/activities-video-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr>
+			<td>Publish a link to a picture</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/activities-photo-js.htm">demo</a></td><td>&nbsp;</td>
+		</tr>
+		<tr><td>Publish a comment to an article</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/activities-comment-js.htm">demo</a></td><td>
+			&nbsp;</td></tr>
+		
+		<tr><th colspan="6">Chat/IM</th></tr>
+		<tr><td>Public chat widget</td><td>&nbsp;</td><td><a href="5.0/chat.htm">demo</a></td><td><a href="4.1/chat.htm">demo</a></td><td><a href="4.1/chat-js.htm">demo</a></td><td>&nbsp;</td></tr>
+		<tr><td>Bar widget</td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/bar.htm">demo</a></td><td><a href="4.1/bar-js.htm">demo</a></td><td>&nbsp;</td></tr>
+
+		<tr><th colspan="6">Calendar</th></tr>
+		<tr><td>View Calendar events</td><td><a href="basic/calendar.htm">demo</a></td><td>
+			&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>Post a Calendar event</td><td>
+			<a href="basic/calendar-postevent.htm">demo</a></td><td>
+			<a href="5.0/event.htm">demo</a></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+		<tr><th colspan="6">Photos</th></tr>
+		<tr><td>View Photos</td><td>&nbsp;</td><td>
+			<a href="5.0/photos.htm">demo</a></td><td>&nbsp;</td><td>&nbsp;</td><td><a href="4.1/photos-custom.htm">demo</a></td></tr>
+
+	</tbody>
+</table>
+
+<section>
+	<header>
+		<h2>Useful information and resources</h2>
+	</header>
+	<table>
+		<thead>
+			<tr><th>Service</th><th>Description</th></tr>
+		</thead>
+		<tbody>
+			<tr><td>
+				Blog: <a href="http://windowsteamblog.com/windows_live/b/developer/">
+				Windows Live For Developers</a></td><td>
+				<a href="http://windowsteamblog.com/windows_live/b/developer/">
+				http://windowsteamblog.com/windows_live/b/developer/</a></td></tr>
+			<tr><td>
+				Blog:
+				<a href="http://windowsteamblog.com/windows_live/b/windowslive/">
+				Inside Windows Live</a></td><td>
+				<a href="http://windowsteamblog.com/windows_live/b/windowslive/">
+				http://windowsteamblog.com/windows_live/b/windowslive/</a></td></tr>
+			<tr><td>
+				Dev: <a href="http://dev.live.com">Windows Live Developer Center</a> </td>
+				<td>
+				<a href="http://dev.live.com">http://dev.live.com</a> </td></tr>
+			<tr><td>
+				Admin: <a href="http://manage.dev.live.com">Windows Live 
+				Developer Admin </a></td><td>
+				<a href="http://manage.dev.live.com">http://manage.dev.live.com</a></td></tr>
+			<tr><td>
+				Showcase: <a href="http://connectdemos.com">Windows Live Showcase </a></td><td>
+				<a href="http://connectdemos.com">http://connectdemos.com</a></td></tr>
+		</tbody>
+	</table>
+</section>
+
+<section>
+	<header>
+		<h2>Mashups</h2>
+		<p>Mashups of the Messenger Connect API, might be more your thing... here are some crackin' examples </p>
+	</header>
+	<table>
+		<thead>
+			<tr><th>Mashup</th><th>Description</th><th>Version</th></tr>
+		</thead>
+		<tbody>
+			<tr><td><a href="5.0/mashup-email.htm">Share via email</a></td><td>A form and an autocomplete contact picker which can be used to send emails</td><td>5.0</td></tr>
+			<tr><td><a href="4.1/mashup-groupchat.htm">Group chat</a></td><td>Hold multiple chats. Drag friends in for a group chat</td><td>4.1</td></tr>
+			<tr><td><a href="4.1/mashup-friendmap.htm">Friend Map</a></td><td>Plots friends on a bing map</td><td>4.1</td></tr>
+			<tr><td><a href="4.1/mashup-email.htm">Share via email</a></td><td>A form and an autocomplete contact picker which can be used to send emails</td><td>4.1</td></tr>
+		</tbody>
+	</table>
+</section>
+
+
+<footer>
+	Author: <a href="http://drew81.com">Andrew Dodson</a> / April 2011
+</footer>
+
+<script>
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-18575680-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</body>
+</html>

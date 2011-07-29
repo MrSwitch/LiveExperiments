@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wl="http://apis.live.net/js/2010">
+<head>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<title>Live Experiments | Profile</title>
+	<link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+	<wl:app 
+		channel-url="channel.htm" 
+		callback-url="connect.php"
+		client-id="000000004C03D93B" 
+		scope="WL_Contacts.View,WL_Profiles.View,Messenger.Signin"
+	></wl:app>
+	<h1>Live Experiments | Profile (userinfo)</h1>
+	<wl:signin></wl:signin>
+	<wl:userinfo cid="$user">
+        <span id='userInfoTemplate' class='sys-template'>
+            <div sys:innertext="{binding profile.firstName}">
+            </div>                 
+        </span>
+	</wl:userinfo>
+
+</body>
+</html>

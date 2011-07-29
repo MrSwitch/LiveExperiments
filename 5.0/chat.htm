@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Chat</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="CLIENT_ID.js"></script>
+</head>
+<body>
+	<h1>Live Experiments | Chat</h1>
+
+<div id="chat" style="width: 300px; height: 450px; "></div>
+<script>
+	/**
+	 * Insert the iFrame chat widget into the div#chat
+	 */
+	(function(){
+		/**
+		 * Get the Application ID.
+		 * If we are building this using 5.0 we might like to use
+		 */
+		var id = CLIENT_ID;
+
+		var f = '<iframe frameBorder=0 style="border:1px solid rgb(182, 193, 205);height:100%;width:100%;" src="'
+				+ "http://secure.shared.live.com/_D/F$Live.SiteContent.Messenger/4.2.64250/Chat.html#domain=" + encodeURIComponent( window.location.hostname ) 
+				+ "&amp;loaderPath=http%3A%2F%2Fjs2.wlxrs.com%2F_D%2FF%24Live.SiteContent.Messenger%2F4.2.64250%2Floader.js" 
+				+ "&amp;client-id=" + id
+				+ "&amp;theme=" + 'light'
+				+ "&amp;event-name="+ document.title
+				+ "&amp;event-url=" + encodeURIComponent( window.location.href ) 
+				+ "&amp;event-description="
+				+ "&amp;event-thumbnail-url="
+				+ "&amp;event-title="
+				+ "&amp;event-embed-source="
+				+ "&amp;event-embed-type="
+				+ "&amp;initial-count=10"
+				+ "&amp;cs:environment=production"
+				+ "&amp;cs:messenger.loaderName=loader.js"
+			+'"></iframe>';
+		
+		document.getElementById("chat").innerHTML = f;
+
+	})();
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- 	<script src="../jquery.js"></script>  -->
+	<link rel="stylesheet" href="../style.css" />
+	<title>Live Experiments | Getting Started Guide</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+	<script>
+	
+		$(document).ready(function(){
+			$("nav").each(function(){
+				// Get the previous header
+				var prevTag = $(this).prevAll("h1,h2,h3,header").get(0);
+				var s='';
+				$(this).nextUntil(prevTag.tagName).filter("h2,h3,h4").each(function(){
+					s += "<li class='"+this.tagName.toLowerCase()+"'><a href='#"+this.innerHTML.replace(/[^a-z]/gi,'')+"'>"+this.innerHTML+"</a></li>";
+					$(this).attr("id",this.innerHTML.replace(/[^a-z]/gi,''));
+				})
+
+				console.log(prevTag.tagName);
+				console.log($(this).nextUntil(prevTag.tagName).filter("h2,h3,h4"));
+				console.log(s);
+				$(this).append('<ul>'+s+'</ul>');
+			});
+			$("pre.demo").each(function(){
+				var text= $(this).text();
+				$('<h4 class="demo">Demo</h4><iframe src="./blank.htm"></iframe>')
+					.insertAfter(this)
+					.filter("iframe").each(function(){
+						var iframe=this, 
+							doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || iframe.document || null;
+						doc.open();
+						doc.write( text );
+						doc.close();
+  					});
+			});
+			$(".toggle").each(function(){
+				$("<button>"+this.title+"</button>").click(function(){
+					$(this).next(".toggle").slideToggle();
+				}).insertBefore(this);
+			});
+
+		});
+
+	</script>
+</head>
+
+<body>
+<h1>Live Experiments | Getting Started Guide</h1>
+
+<blockquote class="note">
+<p>In this section we will show how to initiate your environment and create a <button class="orange">Connect</button> button on your page.</p>
+
+<b>Familiarize yourself with the federated authentication process:</b>
+<ol><li>A user clicks a button to open a popup hosted on live.com which prompts 
+	them to signin with their Windows Live ID.</li>
+	<li>They signin and are redirected to a callback page on your server with a 
+	verification code in the request parameters</li>
+	<li>Your server page will process the querystring in the request and using 
+	your sites clientId and secret together with the verification code, makes 
+	a server to server request for an <em>access_token</em></li>
+	<li>Your server page will read the response from the server and use it to 
+	create some cookies before finally closing the popup window</li>
+	<li>The page which initiated the consent will pick up the cookies and change 
+	the users status.</li></ol>
+<p>If you have absorbed all that, then i shall continue breaking this all down 
+for you.</p>
+</blockquote>
+
+<nav></nav>
+
+<h2>Getting started</h2>
+<h3>Step 1: Get your application credentials</h3>
+<blockquote><p>Every domain must register for a client-id and secret which is unique to that domain</p></blockquote>
+<ol>
+	<li>Signin to <a href="http://manage.dev.live.com">http://manage.dev.live.com</a>. 
+</li>
+	<li>Add a new web application with the domain your developing with</li>
+	<li>Make a note of your client-id and secret</li>
+</ol>
+<h3>Step 2: Build a page with the Signin control</h3>
+<blockquote><p>The signin button is a little snipet of markup in your page <q><code>&lt;wl:signin&gt;&lt;/wl:signin&gt;</code></q>
+but to get this to work we have to define the application settings in <q><code>&lt;wl:app&gt;&lt;/wl:app&gt;</code></q></p></blockquote> 
+<ol><li>Copy the example below and save it in your development environment 
+</li>
+	<li>Add your <em>client-id</em> and the relative paths to channel.htm and your callback script 
+	- we'll introduce these in the following steps</li>
+</ol>
+<p>e.g. signin.htm</p>
+<pre class="demo">
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xmlns:wl="http://apis.live.net/js/2010"&gt;
+&lt;head&gt;
+	&lt;script src="http://js.live.net/4.1/loader.js"&gt;&lt;/script&gt;
+	&lt;title&gt;Signin and UserInfo&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;wl:app 
+		channel-url="channel.htm" 
+		callback-url="connect.php" 
+		client-id="000000004C03D93B" 
+		scope="WL_Profiles.View"&gt;&lt;/wl:app&gt;
+	&lt;wl:signin&gt;&lt;/wl:signin&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+
+<h3>Step 3: Add your callback script for completing authorization</h3>
+
+<blockquote><p>When the user signs in via Messenger Connect. The authorization response is 
+processed via a callback script on your server.</p> </blockquote>
+<ol>
+<li>Choose a flavor below and save it to your development enviroment. </li>
+	<li>Make sure its saved to a location where you can access it from the path 
+	defined in <strong>callback-url</strong> of app-settings (above) else change 
+	this value or the filepath itself. </li>
+<li>In your callback script add your <em>client-id</em> and <em>secret</em> where 
+it says.</li>
+</ol>
+
+<pre title="PHP (connect.php)" class="toggle hide">
+&lt;?php
+
+$clientid = "YOUR CLIENT-ID";
+$secret = "YOUR SECRET";
+
+// Is this a response
+if( ! empty($_GET["wrap_verification_code"] ) ){
+	$cURL = curl_init();
+	curl_setopt_array($cURL, array(
+		CURLOPT_URL =&gt; "https://consent.live.com/AccessToken.aspx",
+		CURLOPT_POST =&gt; true,
+		// CURLOPT_PROXY =&gt; "127.0.0.1:8888", // debugging with fiddler
+		CURLOPT_POSTFIELDS =&gt; ($a = array(
+			&#39;wrap_client_id&#39; =&gt; $clientid,
+			&#39;wrap_client_secret&#39; =&gt; $secret,
+			&#39;wrap_callback&#39; =&gt; "http://".$_SERVER["HTTP_HOST"].$_SERVER["SCRIPT_NAME"], // PHP_SELF
+			&#39;wrap_verification_code&#39; =&gt; $_GET[&#39;wrap_verification_code&#39;]
+		)),
+		CURLOPT_PORT =&gt; 443,
+		CURLOPT_HEADER =&gt; 0, 
+		CURLOPT_VERBOSE =&gt; false,
+		CURLOPT_SSL_VERIFYPEER =&gt; false,
+		CURLOPT_RETURNTRANSFER =&gt; true ));
+	$content = curl_exec($cURL);
+	
+	curl_close($cURL);
+	
+	// turn the form-encoded response into an array
+	parse_str($content, $response);
+	
+	// Something went wrong?
+	if(!array_key_exists(&#39;wrap_access_token&#39;,$response)){
+		print_r(array("Failed",$response,$a));
+		exit(1);
+	}
+	
+	// Define Cookies for the Messenger Connect JavaScript library to find them
+	foreach( array( 
+		&#39;c_accessToken&#39; =&gt; $response[&#39;wrap_access_token&#39;],
+		&#39;c_expiry&#39; =&gt; $response[&#39;wrap_access_token_expires_in&#39;],
+		&#39;c_uid&#39; =&gt; $response[&#39;uid&#39;],
+		&#39;c_clientId&#39;=&gt; $settings[&#39;appid&#39;],
+		&#39;c_clientState&#39; =&gt; @$_GET[&#39;wrap_client_state&#39;],
+		&#39;c_scope&#39; =&gt; $_GET[&#39;exp&#39;],
+		&#39;lca&#39; =&gt; &#39;done&#39; // this one must be set last - it signals to the JS library that the other cookies are ready
+		) as $k =&gt; $o )
+		setcookie( $k, $o, time()+(int)$response[&#39;wrap_access_token_expires_in&#39;], &#39;/&#39; );
+}
+?&gt;
+&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body onload="self.close()"&gt;&lt;/body&gt;&lt;/html&gt;
+</pre>
+<pre title="Python AppEngine (callback.py)" class="toggle hide">
+#!/usr/bin/env python
+"""Demonstrates OAuth WRAP authorization on Windows Live
+For more information on OAuth WRAP, see http://wiki.oauth.net/OAuth-WRAP.
+"""
+
+import re
+import Cookie
+import datetime
+import email.utils
+import logging
+import time
+import os
+import cgi
+import wsgiref.handlers
+import urllib
+
+from google.appengine.api import urlfetch
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import util
+
+# LIVE API TOKEN
+LIVE_API_TOKEN = {
+    "key":"YOUR CLIENT-ID",
+    "secret":"YOUR SECRET"
+}
+
+
+class MainHandler(webapp.RequestHandler):
+	def get(self):
+		"""Callback for the OAuth WRAP authorization handler."""
+		code = self.request.get("wrap_verification_code")
+		
+		if not code:
+			self.response.out.write("There is no wrap_vertification_token");
+			return 1
+
+		try:
+			# BUILD DATA STRING
+			data = urllib.urlencode(dict(
+				wrap_client_id=LIVE_API_TOKEN["key"],
+				wrap_client_secret=LIVE_API_TOKEN["secret"],
+				wrap_callback=self.request.host_url + self.request.path,
+				wrap_verification_code=code
+			))
+
+			# GET ACCESS TOKEN
+			resp = urlfetch.fetch(url="https://consent.live.com/AccessToken.aspx",
+					payload=data,
+					method="POST");
+
+			# Raise error if we dont get a good response from the server
+			if resp.status_code != 200:
+				raise
+
+			response = cgi.parse_qs(resp.content)
+			access_token = response["wrap_access_token"][0]
+
+			# SET COOKIES
+			cookies = dict(
+			    accessToken	=access_token,
+			    c_accessToken=access_token,
+				c_expiry	= response["wrap_access_token_expires_in"][0], 
+				c_uid		= response["uid"][0],
+				c_clientId	= LIVE_API_TOKEN["key"],
+				c_clientState = self.request.get("wrap_client_state"),
+				c_scope	= self.request.get("exp"),
+				lca		= "done"
+			)
+			for name in cookies:
+				cookie = Cookie.BaseCookie()
+				cookie[name] = cookies[name]
+				cookie[name]["path"] = "/"
+				cookie[name]["expires"] = email.utils.formatdate( time.time() + 30 * 86400, localtime=False, usegmt=True )
+				self.response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
+		
+			# ATTACH CALLBACK
+
+			# PRINT OUT HTML
+			self.response.out.write("&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body onload=&#39;self.close()&#39;&gt;&lt;/body&gt;&lt;/html&gt;");
+
+		except:
+			self.response.out.write("Authentication failed")
+
+def main():
+	app = webapp.WSGIApplication([('.*', MainHandler)], debug=True)
+	util.run_wsgi_app(app)
+
+if __name__ == '__main__':
+	main()
+</pre>
+
+<pre title="ASPX (callback.aspx)" class="toggle hide">
+&lt;%@ Page Language=&quot;C#&quot; ClassName=&quot;Callback&quot; AutoEventWireup=&quot;true&quot; Debug=&quot;true&quot; %&gt;
+&lt;%@ Import Namespace=&quot;System.Net&quot; %&gt;
+&lt;%@ Import Namespace=&quot;System.IO&quot; %&gt;
+&lt;script runat=&quot;server&quot;&gt;
+/**
+* This token script allows us to create cookies on the client.
+*/
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+    	/**
+    	 * Get the right credentials
+    	 */
+	    string[] settings = new String[2];
+		settings[0] = "your app id here";
+		settings[1] = "your app secret here";
+
+        // if we got back a verification code
+        if (Request.QueryString["wrap_verification_code"] != null)
+        {
+            // construct a request for an access token
+            WebRequest tokenRequest = WebRequest.Create("https://consent.live.com/AccessToken.aspx");
+            tokenRequest.ContentType = "application/x-www-form-urlencoded";
+            tokenRequest.Method = "POST";
+            using (StreamWriter writer = new StreamWriter(tokenRequest.GetRequestStream()))
+            {
+                writer.Write(
+                    string.Format("wrap_client_id={0}&amp;wrap_client_secret={1}&amp;wrap_callback={2}&amp;wrap_verification_code={3}",
+                        HttpUtility.UrlEncode(settings[0]),
+                        HttpUtility.UrlEncode(settings[1]),
+                        HttpUtility.UrlEncode("http://"+Request.ServerVariables["SERVER_NAME"]+Request.ServerVariables["SCRIPT_NAME"]),
+                        HttpUtility.UrlEncode(Request.QueryString["wrap_verification_code"])
+                ));
+            }
+
+            // sent the request and get the response
+            WebResponse tokenResponse = tokenRequest.GetResponse();
+
+            // read the first line of the response body
+            string tokenResponseText = new StreamReader(tokenResponse.GetResponseStream()).ReadLine();
+
+            // parse the response body as being in the format of 'x-www-form-urlencoded'
+            NameValueCollection tokenResponseData = HttpUtility.ParseQueryString(tokenResponseText);
+           
+            // store response data in session state
+            Session["wl_wrap_access_token"] = tokenResponseData["wrap_access_token"];
+
+            // store data in cookies where the JS library will pick them up
+            Response.Cookies["c_clientId"].Value = settings[0];
+            Response.Cookies["c_clientState"].Value = Request.QueryString["wrap_client_state"];
+            Response.Cookies["c_scope"].Value = Request.QueryString["exp"];
+            Response.Cookies["c_accessToken"].Value = tokenResponseData["wrap_access_token"];
+            Response.Cookies["c_expiry"].Value = tokenResponseData["wrap_access_token_expires_in"];
+            Response.Cookies["c_uid"].Value = tokenResponseData["uid"];
+            Response.Cookies["lca"].Value = "done";
+        }
+    }
+}
+&lt;/script&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;body onload=&quot;self.close();&quot;&gt;&lt;/body&gt;&lt;/html&gt;
+</pre>
+
+<h3>Step 4: Add channel.htm</h3>
+<blockquote><p>channel.htm is the Messenger Connect cross domain solution for handling responses from POST requests.</p></blockquote>
+<ol><li>Copy and save the code below as channel.htm. </li>
+	<li>Update the path in <strong>channel-url</strong> of app-settings (above) </li>
+</ol>
+<pre title="channel.htm" class="hide toggle">
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name="ROBOTS" content="NONE" /&gt;
+&lt;script&gt;
+function parseIsLiveUserResponse(e){
+	var b="isLiveUser";
+	if(!e)return false;
+	for(var d=e.substring(1).split("&amp;"),a=[],c=0;c&lt;d.length;c++){
+		parm=d[c].split("=");
+		a[unescape(parm[0])]=unescape(parm[1])
+	}
+	if(a[b]!==undefined&amp;&amp;a[b].length!=0&amp;&amp;window.parent&amp;&amp;window.parent.parent&amp;&amp;window.parent.parent.Microsoft!==undefined){
+		var f=a[b]=="true";
+		window.parent.parent.Microsoft.Live.App.get_auth().set_isLiveUser(f);
+		return true
+	}
+	return false
+}
+var channelVersion="4.1";
+
+function onLoad(){
+	try{
+		var b=window.location.hash.substr(1),
+			d=window.location.search;
+		if(window.location.replace==null)
+			window.location.replace=window.location.assign;
+		if(parseIsLiveUserResponse(d))
+			return;
+		if(b.substr(0,13)=="meshresponse="){
+			b=decodeURIComponent(b);
+			a=window.parent.parent;
+			a.Microsoft&amp;&amp;a.Microsoft.Live.Services.JSONPCloudRequestHandler.postResult(b)
+		}
+		else {
+			var c=b.split("/")[0],
+			a=null;
+			if(c&amp;&amp;c!=".parent")
+				a=window.parent.frames[c];
+			else 
+				a=window.parent.parent;
+	
+			a.Microsoft&amp;&amp;a.Microsoft.Live.Channels.Mux._recv_chunk(b)
+		}
+	}
+	catch(e){}
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload="onLoad();"&gt;&lt;/body&gt;&lt;/html&gt;
+</pre>
+<h2>Code Samples and Resources</h2>
+<p>Download all required files in this recipe.</p>
+<a href="../mc-recipe-one-signin.zip">Download mc-recipe-one-signin.zip</a>
+</body>
+
+
+<h2>Appendix</h2>
+<blockquote><p>To initialize MC there are four required credentials to 
+place in either <q>&lt;wl:app/&gt;</q> or&nbsp; <q>Microsoft.Live.App.initialize</q> 
+(which ever one your using).</p></blockquote>
+<table>
+	<thead>
+		<tr>
+			<th>Declarative Attribute name</th>
+			<th>Imperative Property name</th>
+			<th>Argument</th>
+			<th>Description</th>
+			<th>Format</th>
+			<th>Example</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>channel-url</td>
+			<td>channelurl</td>
+			<td><em>required</em></td>
+			<td>A relative or absolute path to the channel.htm file which handles Cross Domain responses between your site and Messenger Connect REST endpoints. 
+			This must be on the same domain as your site.</td>
+			<td><i>url</i></td>
+			<td><q>channel.htm</q></td>
+		</tr>
+		<tr>
+			<td>client-id</td>
+			<td>clientid</td>
+			<td><em>required</em></td>
+			<td>An domain specific ID which was obtained when your the application was registed at <a href="http://manage.dev.live.com">http://manage.dev.live.com</a>.</td>
+			<td><i>string</i></td>
+			<td><q>000000004C03D93B</q></td>
+		</tr>
+		<tr>
+			<td>callback-url</td>
+			<td>callbackurl</td>
+			<td><em>required</em></td>
+			<td>A relative or absolute path to your server script which performs the OAUTH_WRAP handshake. 
+			This must be on the same domain as that associated with the 
+			client-id you obtained at registration.</td>
+			<td><i>string</i></td>
+			<td><q>connect.php</q></td>
+		</tr>
+		<tr>
+			<td>scope</td>
+			<td>scope</td>
+			<td><em>required</em></td>
+			<td>A comma seperated list of services that your application uses and which the user must grant permission to when they signin</td>
+			<td>WL_Profiles.View<br/>WL_Contacts.View<br>WL_Activities.View<br>
+			Messenger.Signin<br>WL_Profiles.UpdateStatus<br/>WL_Activities.Update</td>
+			<td><q>WL_Profiles.View,WL_Contacts.View</q></td>
+		</tr>
+		<tr>
+			<td>onload</td>
+			<td>onload</td>
+			<td><em>optional</em></td>
+			<td>A string refering to the name of the function to execute after Messenger Connect has been initialized</td>
+			<td><i>string</i></td>
+			<td><q>appLoaded</q></td>
+		</tr>
+	</tbody>
+
+</table>
+
+</html>

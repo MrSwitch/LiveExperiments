@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Profile</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"/> 
+
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+	
+	<!-- Applications connect credentials -->
+	<script src="connect.php"></script>
+	
+	<!-- CUSTOM CONTROLS FOR CONNECT  -->
+	<script src="custom-connect.js" ></script>
+<script>
+	
+/**
+ * Populate target with information about the current users Profile
+ * Uses JSONP to communicate with a REST endpoint
+ */
+function getProfile(target){
+
+	if( !getState() || !getAccessToken() ){
+		alert("Please signin first");
+		return;
+	}
+
+	// Set "loading" for the styles
+	document.getElementsByTagName('ul')[0].className = "loading";
+
+	// Build the querystring, which includes our live.token and statement of the formats we're sending and receiving
+	var qs = '$format=json&$headers=Accept%3Aapplication%2Fjson%3BContent-Type%3Aapplication%2Fjson%3B&$accessToken='+encodeURIComponent(getAccessToken())+'&$callback=?';
+
+	// Get the environment
+	// This includes all items that we have a scope for
+	$.getJSON('https://apis.live.net/v4.1/?'+qs, function(json){
+
+		// Using ProfilesLink we get the profile data
+		$.getJSON(json.ProfilesLink+'?'+qs, function(json){
+
+			// Get the Profile
+			$.getJSON( json.BaseUri+json.ProfilesLink + '?'+qs, function(json){
+				// Profile is stored in the first child
+				var profile = json.Entries[0],
+					s='';
+				
+				// loop through and print out each key=>value pair.
+				for(var x in profile ){
+					s += '<li>'+x+': <q>'+profile[x]+'</q></li>';
+				}
+
+				$(target).html(s);
+			});
+		});
+	});
+}
+</script>
+</head>
+<body>
+	<h1>Live Experiments | Profile</h1>
+	<blockquote>
+		<p>Bespoke Profile access: This uses jQuery to make JSONP/REST requests to access your profile</p>
+	</blockquote>
+	<button onclick="signInOut()" class="orange" id="signin">loading..</button>
+	<button onclick="getProfile(document.getElementsByTagName('ul')[0])">Get Profile</button>
+	<ul></ul>
+	
+</body>
+</html>

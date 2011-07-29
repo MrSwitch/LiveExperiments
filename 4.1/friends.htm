@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wl="http://apis.live.net/js/2010">
+<head>
+	<title>Live Experiments | Friends</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+	<wl:app 
+		channel-url="channel.htm" 
+		callback-url="connect.php"
+		client-id="000000004C03D93B" 
+		scope="WL_Contacts.View,WL_Profiles.View"
+	></wl:app>
+	<h1>Live Experiments | Friends</h1>
+	<wl:signin></wl:signin>
+	<wl:contact-list></wl:contact-list>
+</body>
+</html>

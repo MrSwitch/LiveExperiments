@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Public Chat Widget</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+	Microsoft.Live.Core.Loader.load(["Messenger.UI.ChatFrame"], function () {
+        $create(Microsoft.Live.UI.Messenger.ChatFrameControl,
+            { eventName: 'Test', clientId:connect.clientId },
+            {},
+            {},        
+            document.getElementById('chat')
+            );
+    })
+	
+</script>
+</head>
+<body>
+	<h1>Live Experiments | Public Chat Widget</h1>
+	<div id="chat"></div>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Mashup | GroupChat</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script type="text/javascript">
+
+
+
+/***************************************************************
+ * Logging
+ ***************************************************************/
+
+function log() {
+	if (typeof(console) === 'undefined'||typeof(console.log) === 'undefined'){
+		 return;
+	}
+	else if (typeof console.log === 'function') {
+		console.log.apply(console, arguments); // FF, CHROME, Webkit
+	}
+	else{
+		console.log(Array.prototype.slice.call(arguments)); // IE
+	}
+}
+
+
+
+/***************************************************************
+ * Loading Library's
+ ***************************************************************/
+
+Microsoft.Live.Core.Loader.load([ "microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload: "msgr.init"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+
+
+/***************************************************************
+ * Bespoke Messenger Connect implementation
+ * When the library has loaded then msgr.init is triggered
+ ***************************************************************/
+
+var msgr = {
+	
+	// Triggered by Microsoft.Live.App.initialize
+	init : function(){
+		// Get the session
+		var auth =  Microsoft.Live.App.get_auth();
+		log('appLoaded',auth.get_state());
+	
+	
+		// Get Messenger Context
+		// http://msdn.microsoft.com/en-us/library/ff749649.aspx
+		var messengerContext = Microsoft.Live.App.get_messengerContext();
+		messengerContext.add_propertyChanged(function(sender, args){
+			if(args.get_propertyName() === 'user'){
+				log('property changed', auth.get_state() === Microsoft.Live.AuthState.authenticated ? "authenticated" : "unauthenticated" );
+				if( (auth.get_state() === Microsoft.Live.AuthState.authenticated ) 
+					&& ( msgr.user = Microsoft.Live.App.get_messengerContext().get_user() ) !== null ){
+					msgr.appid = msgr.user.get_localEndpoint().get_applicationId();
+					msgr.user.add_signInCompleted(msgr.signin);
+				}
+			}
+		});
+		
+		// Bind all events listeners to DOM objects
+		var x,m;
+
+		for( x in msgr.EVENTS ){
+			if(msgr.EVENTS.hasOwnProperty(x)){
+				m = x.match(/(.* )?([a-z]+)$/);
+				$(m[1]||window)[m[1]?'live':'bind'](m[2], msgr.EVENTS[x]);
+			}
+		}
+
+	},
+
+	// Install events
+	EVENTS : {
+		'div.contacts img click' : function(){
+			// Start a conversation
+			msgr.chat($(this).data('contact'));
+		},
+		'img.contact dragstart' : function(ev) {
+			var dt = ev.originalEvent.dataTransfer;
+			ev.originalEvent.dataTransfer.setData("text/plain", $(this).data('contact').get_cid());
+			ev.effectAllowed = 'move';
+			return true;
+		},
+		'img.contact dragend' : function(ev) {
+			return false;
+		},
+        '.conversation dragenter' : function(ev) {
+			return false;
+		},
+		'.conversation dragleave' : function(ev) {
+			return false;
+		},
+		'.conversation dragover' : function(ev) {
+			return false;
+		},
+		'.conversation drop' : function(e) {
+			var dt = e.originalEvent.dataTransfer,
+				cid = (dt.getData('Text') || dt.getData('text/plain')).match(/\-?[0-9a-z]{10,20}/i)[0],
+				contact = msgr.user.get_contacts().findByCid(cid);
+			try{
+				log("Adding " + contact.get_displayName() + " to the conversation");
+				
+				// INVITE CONTACT
+				// http://msdn.microsoft.com/en-us/library/ff750427.aspx
+				$(this).data('conv').inviteContact(contact);
+				
+				// Add this contact with a "pending" class
+				// This will be removed when the roster collectionChanged event is fired
+				$(".group",this).avatar(contact).addClass("pending");
+			}
+			catch(er){
+				log("Could not add contact... they are most likely already added");
+			}
+			return false;
+		},
+		// Close conversation
+		'.conversations .close click' : function(){
+			var $conv = $(this).parent();
+
+			// http://msdn.microsoft.com/en-us/library/ff751109.aspx
+			$conv.data('conv').close();
+			// http://msdn.microsoft.com/en-us/library/ff749571.aspx
+			$conv.data('conv').dispose();
+			
+			$conv.hide("fast", function(){$(this).remove();});
+		},
+		'.conversations textarea keyup' : function(e){
+			// has the user hit the return button?
+			var conv = $(this).parents('.conversation').data('conv');
+			
+			// Tell everyone your typing
+			conv.notifyUserTyped();
+
+			if(e.keyCode===13){
+				log("sendMessage: "+ this.value.replace(/\r?\n$/, ''));
+
+				// SendMessage
+				// Format:  Remove the trailing newline, we could use keydown without this also.
+				//			Sanitize message string
+				// http://msdn.microsoft.com/en-us/library/cc967157.aspx
+				$(this).parents('.conversation').data('conv').sendMessage(new Microsoft.Live.Messenger.TextMessage(this.value.replace(/\r?\n$/, '')));	
+				this.value = '';
+			}
+		}
+	},
+	// build envriomment and set up listeners
+	signin : function(){
+		// We have contacts
+		$('.nocontacts').html("Loading...");
+
+		// Listen for changes in the conversations list
+		// http://msdn.microsoft.com/en-us/library/ff748224.aspx
+		msgr.user.get_conversations().add_collectionChanged(msgr.conversationChanged);
+
+		// Listen for changes in the contacts list
+		// http://msdn.microsoft.com/en-us/library/ff751317.aspx
+		msgr.user.get_onlineContacts().add_collectionChanged(msgr.contactsChanged);
+	},
+	/**
+	 * Update the list with any new Contacts
+	 */
+	contactsChanged : function(sender,e){
+		var that = this, i=0, contacts=e.get_newItems();
+		// FIND IF THIS CONTACT IS IN THE SAME APPLICATION
+		if(!e.get_newItems()){ return false; }
+		
+		// Loop through new contacts
+		for( ; i < contacts.length; i++ ){
+			// Add the user to the list of messenger contacts for the "Share control"
+			msgr.contact(contacts[i]);
+		}
+	},
+	
+	/**
+	 * Read current conversations, add them to the contacts list
+	 */
+	conversationChanged : function(sender,e){
+		var i = 0, cid, conv = e.get_newItems();
+		// Loop through additional conversations
+		for (; i < conv.length; i++) {
+			// log('conv',conv[i].get_history().get_lastReceived());
+			// Do not trigger if started by the Session User... otherwise we make redundant requests
+			if(msgr.user.get_address().get_cid() !== conv[i].get_creator().get_cid()){
+				msgr.chat(msgr.contact(conv[i].get_creator().get_contact()));
+			}
+		}
+	},
+	
+	/**
+	 * Add Contact
+	 * This adds the contact to the list-of-contacts if they are not already there
+	 * @param object: See http://msdn.microsoft.com/en-us/library/microsoft.live.messenger.contact_members.aspx
+	 */
+	contact : function (contact){
+
+		if(!contact.get_cid() || !contact.get_displayName()){
+			return;
+		}
+
+		// Incase you are hidden from them
+		// http://msdn.microsoft.com/en-us/library/gg262235.aspx
+		contact.appearOnlineTo();
+
+		// Create/Update Contact
+		var $el = $('div.contacts').avatar(contact);
+
+		// We have contacts
+		// Hide that placeholder
+		$('.nocontacts').hide();
+		
+		return contact;
+	},
+	
+	/**
+	 * This starts a chat window.
+	 * @param Contact object
+	 */
+	chat : function (contact){
+		log("Creating conversation");
+
+		// Create a conversation
+		// http://msdn.microsoft.com/en-us/library/dd570235.aspx
+		var conv = msgr.user.get_conversations().create(contact);
+		
+		// Is this conversation a copy of another... 
+		// The "create" method above will return a conversation created by the same contact - should one exist.
+		// Lets check that there are no other conversations open which are identical to this.
+		if( $(".conversations .conversation").filter(function(){
+			return ($(this).data('conv').get_id() === conv.get_id());
+		}).length ){
+			log("Cannot create a new conversation, as this conversation already exists");
+			return false;
+		}
+
+		// Create the chat box
+		// User post message event is handled in EVENTS (above)
+		var $conv = $('<div class="conversation">'+
+			'<button class="close">&#10005;</button><div class="group"></div><div class="dialogue"></div><hr/>'+
+			'<span class="me"></span><textarea></textarea>'+
+			'<span class="activity"></span></div>').appendTo('.conversations');
+
+		var $chatter=$conv.find('.dialogue');
+
+
+		// Add friends image to the chat window
+		$conv.find('.group').avatar(contact);
+
+		// Add user session image to the chat window
+		$conv.find('.me').avatar(msgr.user);
+
+		// MESSAGE TYPE
+		// 1 = TextMessage
+		// http://msdn.microsoft.com/en-us/library/ff751774.aspx
+		conv.supportsMessageType(1);
+
+		// ROSTER
+		// Monitor who is in the conversation
+		// http://msdn.microsoft.com/en-us/library/ff748776.aspx
+		conv.get_roster().add_collectionChanged(function(sender,e){
+			log('roster',sender,e);
+			var i=0,m=e.get_newItems();
+			
+			// Add new Contacts to the chat
+			for( ; i < m.length; i++ ){
+				// Add the user to the list of messenger contacts for the "Share control"
+				log("NEW ROSTER",m[i].get_contact());
+				$conv.find('.group').avatar(m[i].get_contact()).removeClass('pending');
+			}
+			
+			// Loop though all chatters
+			// Reasserting their presence
+			$conv.find('.group .contact').filter(function(){
+				// Loop through the roster
+				var i=0;
+				for( ; i < sender.get_count(); i++ ){
+					if($(this).data('contact').get_cid()===sender.get_item(i).get_contact().get_cid()){
+						// Yes they are in the roster, we dont want them.
+						return false;
+					}
+				}
+				
+				// Tell all that the contact has left the conversation
+				$conv.find('.activity').htmlAlert(this.title + " has left the conversation");
+				
+				// No they are not in the roster
+				return true;
+			}).remove();
+		});
+
+		// HISTORY
+		// Listen to the conversation history for new items.
+		// This provides content for our dialogue
+		// http://msdn.microsoft.com/en-us/library/ff747787.aspx
+		conv.get_history().add_collectionChanged(function(sender,e){
+			log('history',sender);
+			if(!e.get_newItems()){ return false; }
+			var i=0,name,body,m=e.get_newItems();
+
+			// Loop through new contacts
+			for( ; i < m.length; i++ ){
+				
+				// Get the name of the sender
+				name = m[i].get_sender().get_contact().get_displayName();
+				
+				// Format the body of the message to restrict script injection and add emoticons
+				body = Microsoft.Live.Messenger.MessengerUtility.emoticonEncode(m[i].get_text());
+			
+				// Append to the chatter
+				$chatter
+					.append(($chatter.find('.name:last').text() !== name?'<span class="name">'+(name||'?'):'')+'</span>')
+					.append(body);
+			}
+			
+			// Update the scroll position to keep it inline with the conversation
+			var elem = $chatter[0];
+			try{
+				elem.scrollBottom = 0;
+			}
+			catch(er){}
+			try{
+				elem.scrollTop = elem.scrollHeight;
+			}
+			catch(err){}
+		});
+
+		// TYPING?
+		// Monitor which parties are currently typing...
+		// http://msdn.microsoft.com/en-us/library/ff751554.aspx
+		conv.get_typingAddresses().add_collectionChanged(function(sender, e){
+			// if a user has started typing
+			var s;
+			if(e.get_action()===0){
+				var contactList = msgr.user.get_onlineContacts(),
+					users = [],
+					i=0;
+
+				for (; i<sender.get_count();i++){
+					users.push(contactList.findByAddress(sender.get_item(i)).get_displayName());
+				}
+				s = users.join(' ') + (users.length>1 ? ' are' : ' is') + " typing...";
+			}
+			$conv.find('.activity').htmlAlert( s );
+		});
+
+		// Bind this conversation to the Contact
+		$conv.data('conv', conv);
+	}
+};
+
+// JQuery Extension for adding an avatar to an element
+// If the avatar already exists, it is updated
+// Create a avatar of a user
+$.fn.avatar = function(contact){
+	// Add user image to the chat window
+	var $el;
+	$(this).each(function(){
+
+		// Get user
+		$el = $('img', this).filter(function(){
+			return !contact.get_cid || ( $(this).data('contact').get_cid() === contact.get_cid());
+		});
+		
+		if($el.length===0){
+			$el = $('<img class="contact"/>')
+				.error(function(){
+					// Error handling and providing a default image is recommended as some users dont provide their own images
+					$(this).attr('src',"http://secure.wlxrs.com/_D/F$Live.SiteContent.Messenger/4.2.59120/resources/images/DisplayPictureControl/Default.png");
+				}).appendTo(this);
+		}
+
+		$el.attr({
+			src:contact.get_presence().get_displayPictureUrl(),
+			title:contact.get_displayName()
+		});
+		
+		// Store the contact data with the DOM object
+		$el.data('contact',contact);
+	});
+	return $el;
+};
+
+// htmlAlert
+// Put a message into the containing element breifly, removing it after 10 seconds
+$.fn.htmlAlert = function(s){
+	// Add user image to the chat window
+	$(this).each(function(){
+		if(s){
+			$(this).html( s ).fadeIn('slow').animate({opacity: 1.0},10000).fadeOut('slow');
+		}
+		else {
+			$(this).html( '' ).fadeOut('fast');
+		}
+	});
+	return this;
+};
+
+
+
+
+
+
+</script>
+<style>
+
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana;
+}
+	.contacts{
+		display:inline;
+	}
+	img.contact{
+		background: url(http://secure.wlxrs.com/_D/F$Live.SiteContent.Messenger/4.2.59120/resources/images/Tile.DisplayPicture.Small.png) scroll no-repeat -80px 0;
+		padding:6px 8px 10px 8px;
+		height:23px;
+		width:23px;
+		cursor:pointer;
+		vertical-align:top;
+	}
+	img.contact.pending{
+		background-position: -80px 0;
+		opacity:0.2;
+	}
+	
+	.conversation{
+		width: 200px;
+		display:inline-block;
+		background-color: #F4F4F4;
+		border: 1px solid #E4E4E4;
+		padding: 10px;
+		margin: 10px;
+		vertical-align: top;
+	}
+		.close{
+			float:right;
+			font-weight: bold;
+			padding: 2px;
+			margin: -10px;
+			font-size: 0.5em;
+			background: #DDD;
+			border: 0;
+			cursor:pointer;
+		}
+		.dialogue{
+			max-height: 200px;
+			overflow:auto;
+		}
+			.dialogue span{
+				display: block;
+			}
+			.dialogue span.name{
+				font-size: 0.8em;
+				color:gray;
+			}
+		
+		textarea, .dialogue{
+			width:75%;
+			vertical-align:top;
+			display:inline-block;
+		}
+		.group, .me{
+			width:25%;
+			vertical-align:top;
+			display:inline-block;
+		}
+		textarea{
+			width:72%;
+		}
+
+		.activity{
+			font-size:0.7em;
+			float:right;
+		}
+
+</style>
+</head>
+
+<body>
+<h1>Live Experiments | MashUp | GroupChat</h1>
+<blockquote>
+	<p>This demo illustrates multiple conversations. Instructions...</p>
+	<ol>
+		<li><span id="signin"></span> to messenger and wait for your contacts to load</li>
+		<li>Click on a contact to start a chat. <div class="contacts"><span class="nocontacts">(Signin to load contacts)</span></div></li>
+		<li>Drag other users over the conversation to add them into the conversation.</li>
+	</ol>
+</blockquote>
+
+
+<div class="conversations"></div>
+
+</body>
+</html>

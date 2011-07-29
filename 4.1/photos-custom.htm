@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Photos</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"/> 
+
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+	
+	<!-- Applications connect credentials -->
+	<script src="connect.php"></script>
+	
+	<!-- CUSTOM CONTROLS FOR CONNECT  -->
+	<script src="custom-connect.js" ></script>
+<script>
+	
+/**
+ * Get my Photos 
+ * There is not a javascript API to access this yet.
+ */
+function getPhotos(target){
+
+	if( !getState() || !getAccessToken() ){
+		alert("Please signin first");
+		return;
+	}
+
+	// Build the querystring, which includes our live.token and statement of the formats we're sending and receiving
+	var qs = '$format=json&$headers=Accept%3Aapplication%2Fjson%3BContent-Type%3Aapplication%2Fjson%3B&$accessToken='+encodeURIComponent(getAccessToken())+'&$callback=?';
+
+	// Set "loading" for the styles
+	document.getElementsByTagName('ul')[0].className = "loading";
+
+	// Get the environment
+	// This includes all items that we have a scope for
+	$.getJSON('https://apis.live.net/v4.1/?'+qs, function(json){
+
+		// Read the PhotosLink
+		$.getJSON(json.PhotosLink+'?'+qs, function(json){
+
+			// Get the Albums
+			$.getJSON(json.BaseUri+json.AlbumsLink+'?'+qs, function(json){
+
+				// loop through the Albums.
+				$(json.Entries).each(function(){
+					// Get the Files
+					$.getJSON(this.BaseUri+this.FilesLink+'?'+qs, function(json){
+						// Print out each Image
+						$(json.Entries).each(function(){
+							$(target).append('<img src="'+this.Thumbnail_96X96.Uri+'"/>'+this.Title+'<br>');
+						});
+
+					});
+					
+				});
+				
+			});
+		});
+	});
+}
+
+</script>
+</head>
+<body>
+	<h1>Live Experiments | Photos</h1>
+	<blockquote>
+		<p>Bespoke Photo access: This uses jQuery to make REST requests to get your Live photos</p>
+	</blockquote>
+	<button onclick="signInOut()" class="orange" id="signin">loading..</button>
+	<button onclick="getPhotos(document.getElementsByTagName('ul')[0])">Get Photos</button>
+	<ul></ul>
+	
+</body>
+</html>

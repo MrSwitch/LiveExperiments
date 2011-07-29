@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Is Live User?</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload: "appLoaded"
+	});
+});
+
+function appLoaded (){
+	var auth =  Microsoft.Live.App.get_auth();
+	// Listen to property onchange events
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'isLiveUser') return;
+	    // Write out the users new status
+		document.getElementById("state").innerHTML = 'Yes this is a Windows Live User';
+	});
+}
+
+</script>
+</head>
+
+<body>
+<h1>Live Experiments | User State</h1>
+	<blockquote>
+		<p>Detects whether the current user is a Windows Live user <span id="state" style="background:#FFFFCC"></span></p>
+	</blockquote>
+	<button onclick="alert(Microsoft.Live.App.get_auth().get_isLiveUser()?'Yes this is a Windows Live User':'Dont\'t know, they could have covered their tracks though')">Check status</button>
+</body>
+</html>

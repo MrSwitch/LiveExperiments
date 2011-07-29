@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wl="http://apis.live.net/js/2010">
+<title>Illustration of Windows Live</title>
+<meta http-equiv="x-ua-compatible" content="IE=9" />
+<script src="http://js.live.net/4.1/loader.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+
+<link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+<style>
+	header:first-child{
+		background-color:#eee;
+	}
+	header,article,nav,nav a{
+		border:15px solid black;
+		border-top-right-radius: 20% 50%;
+		border-top-left-radius: 50% 20%;
+		border-bottom-left-radius: 20% 50%;
+		border-bottom-right-radius: 50% 20%;
+		margin:30px;
+		font-family:"Indie Flower";
+		font-style:italic;
+		font-weight:bold;
+		background-color:white;
+	}
+	section article header{
+		padding-left:100px;
+		border-color:transparent;
+		border-bottom-color:black;
+	}
+	body > header{
+		-ms-transform:rotate(1degs) skewX(20degs);
+		-moz-transform:rotate(1deg) skewX(20deg);
+		-webkit-transform:rotate(1deg) skewX(20deg);
+		transform:rotate(1deg) skewX(20deg);
+	}
+
+	nav a{
+		margin:30px 10px;
+		padding:10px 40px;
+		font-size:2em;
+		-webkit-transition:ease 0.2s;
+		-moz-transition:ease 0.2s;
+		-o-transition:ease 0.2s;
+		transition:ease 0.2s;
+	}
+	nav a:hover{
+		background-color:#ddd;
+/*		box-shadow:0 0 10px 5px gold;
+*/
+		vertical-align:top;
+	}
+	nav a:target{
+		background-color:#ccc;
+/*		box-shadow:0 0 10px 5px lime; 
+*/
+		padding-top:13px;
+		padding-bottom:7px;
+	}
+
+	h1,h2,h3,article{
+		font-size:2em;
+		margin:0;
+	}
+	h1{
+		font-size:3em;
+	}
+	article a{
+		color:red;
+		text-decoration:underline;
+	}
+	pre{
+		display:none;
+		border:1px solid red;
+		background-color:pink;
+		
+	}
+	
+	section{
+		overflow:hidden;
+	}
+		section div{
+			width:100000px;
+		}
+			section div article{
+				vertical-align:top;
+				display:inline-block;
+				padding:30px 60px;
+				padding-bottom:60px;
+			}
+
+</style>
+<script>
+	$(window).bind("hashchange",function(){
+		var $el = $("article."+window.location.hash.replace(/\#/,'')),
+			len = $el.prevAll().length;
+		$el.animate({opacity:1}).siblings().animate({opacity:0});
+		$("section > div").animate({marginLeft:-(len*($el.width()+150)) + "px"},'fast');
+	});
+	
+	$(document).ready(function(){
+		$("<a>how?</a>").click(function(){$(this).next("pre").slideToggle();}).insertBefore("pre");
+		resize();
+	});
+	function resize(){
+		$("article").width($('section').width()-150);
+		$(window).trigger('hashchange');
+	}
+
+	$(window).resize(resize);
+
+</script>
+</head>
+
+<body>
+
+<header>
+	<h1>My Super-duper Social Site</h1>
+</header>
+<nav>
+	<a href="#home" name="home">Home</a>
+	<a href="#chat" name="chat">Chat</a>
+	<a href="#invite" name="invite">Invite</a>
+	<a href="#photos" name="photos">Photos</a>
+	<a href="#events" name="events">Events</a>
+</nav>
+<section>
+	<div>
+		<article class="home">
+			<header>
+				<h2>Welcome</h2>
+			</header>
+			<p>Look at all the social interactive things you can do on my site.</p>
+			<p>...... FYI: I'm using Messenger Connect to make my site social</p>		
+		</article>
+		<article class="chat">
+			<header>
+				<h2>Chat</h2>
+			</header>
+			<div style="display:inline-block;width:60%;vertical-align:top;">
+				<p>Use the chat tool (on the left) to hold public conversations on my website</p>
+<pre>
+&lt;wl:chat-frame
+  event-name = &quot;Test&quot;
+  client-id=&quot;000000004C03D93B&quot;&gt;
+&lt;/wl:chat-frame&gt;
+</pre>
+			</div>
+			<div style="display:inline-block;width:30%;">
+			<wl:chat-frame
+			   event-name = "Test"
+			   client-id="000000004C03D93B">
+			</wl:chat-frame>
+			</div>
+		</article>
+		<article class="invite">
+			<header>
+				<h2>Invite</h2>
+			</header>
+			<p>Share this article or site with one of your friends -&gt; <span style="display:inline-block;"><wl:share dialog-button-label="Share" picker-label="Share with your contacts" message="Check out my site!" max-selection-count="15"></wl:share></span></p>
+<pre>
+&lt;wl:share dialog-button-label=&quot;Share&quot; picker-label=&quot;Share with your 
+  contacts&quot; message=&quot;Check out my site!&quot; 
+  max-selection-count=&quot;15&quot;&gt;
+&lt;/wl:share&gt;
+</pre>
+		</article>
+		<article class="photos">
+			<header>
+				<h2>Sorry, haven't implemented</h2>
+			</header>
+		</article>
+		<article class="events">
+			<header>
+				<h2>Sorry, haven't implemented</h2>
+			</header>
+		</article>
+	</div>
+</section>
+	<wl:app 
+		channel-url="channel.htm" 
+		callback-url="connect.php"
+		client-id="000000004C03D93B" 
+		scope="WL_Contacts.View,WL_Profiles.View,Messenger.Signin"
+	></wl:app>
+</body>
+
+</html>

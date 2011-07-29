@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | MyActivities</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,WL_Activities.View",
+		onload: "appLoaded"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+
+
+function appLoaded(){
+	var auth = Microsoft.Live.App.get_auth();
+	// register for notifications when auth state changes
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'state') return;
+	    if (auth.get_state()===Microsoft.Live.AuthState.authenticated){
+			getMyActivities();
+		}
+	});
+};
+
+/**
+ * Get the users contacts
+ */
+function getMyActivities(){
+
+	var ul = document.getElementsByTagName("ul")[0];
+
+	//Placeholder
+	ul.innerHTML = "Loading activities...";
+
+	// Load contacts
+	Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.myActivities, {}, function(e){
+
+		// Place this in a function to recursively get all the users contacts.
+		(function next(){
+			var d = e.get_data();
+			
+			// Have we got more results to get?
+			if( d.hasNextPage && d.hasNextPage() ){
+				d.loadNextPage(next);
+			}
+			else {
+				var li = '',
+					i = 0,
+					d = e.get_data(),
+					json,
+					a = [],
+					msg;
+
+				// Print retults
+				for(;i < d.get_length(); i++){
+					json = d.getItem(i).get_resource();
+					li += "<li>" + json.HtmlSummary + '</li>';
+				}
+				ul.innerHTML = "Found " + i + " activities: "  + li;
+			}
+		})()
+
+	});
+}
+
+</script>
+</head>
+<body>
+	<h1>Live Experiments | MyActivities</h1>
+	<blockquote>
+		<p>Displays a list of ones activities, first connect <span id="signin"></span></p>
+	</blockquote>
+	<ul></ul>
+</body>
+</html>

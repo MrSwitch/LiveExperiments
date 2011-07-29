@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Signin</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"/> 
+	<link rel="stylesheet" href="../style.css" />
+	
+	<!-- Applications connect credentials -->
+	<script src="connect.php"></script>
+	
+<script>
+	
+	/**
+	 * Get the expiry date of the access token
+	 * You can store the access token expiry in anyway but this function helps when working with the existing API
+	 */	
+	function getAccessTokenExpiry(){
+		// Our connect script returns a c_expiry cookie, so on initial load we must use this.
+		if(document.cookie.match(/c_expiry=([0-9]+)/)){
+			document.cookie="wl_accessTokenExpireTime="+((new Date).getTime()+(parseInt(document.cookie.match(/c_expiry=([0-9]+)/)[1]))*1000)+"; path=/";
+			document.cookie="c_expiry=; path=/";
+		}
+		var exp = document.cookie.match(/wl_accessTokenExpireTime=([0-9]+)/);
+		return (exp?(parseInt(exp[1])/1e3):0);
+	}
+	
+	/**
+	 * Checks some cookies, to see if the user is signed in
+	 * wl_accessTokenExpireTime is the cookie created in the script (this is the same as the Messenger Connect JS API)
+	 * c_expiry is created by the connect authentication script.
+	 */
+	function getState(){
+
+		// If signed in we'll have a valid wl_accessTokenExpireTime cookie, we'll have to check the time of that
+		var signedIn = ((((new Date).getTime()/1000) - getAccessTokenExpiry())<0);
+		
+		document.getElementById("signin").innerHTML = signedIn ? "Sign Out" : "Connect";
+		
+		return signedIn;
+	}
+
+	
+	/**
+	 * Listens for a change in state indicated by the cookies.
+	 */
+	function cookie_listener(){
+		if( !getState() ){
+			setTimeout(cookie_listener, 300);
+		}
+	}
+	
+	/**
+	 * Action to trigger when the user hits the connect/signout button
+	 */
+	function signInOut(){
+		if(!getState()){
+			// sign the user in
+			window.open('https://consent.live.com/connect.aspx?wrap_client_id=' + connect.clientId + '&wrap_callback=' + connect.url + '&wrap_scope=WL_Profiles.View',
+						'Signin',
+						'width=450,height=400');
+			
+			// Set listener to listen for cookies being changed
+			cookie_listener();
+		}
+		else{
+			// signout
+			document.cookie="wl_accessTokenExpireTime=; path=/";
+
+			// Update the button;
+			getState();
+		}
+	}
+
+	window.onload = getState;
+
+</script>
+<style>
+/**
+ * WHITE SIGNIN BUTTON
+ */
+button.white{
+	background: white url(http://secure.wlxrs.com/_D/F$Live.SiteContent.PROD.Connect/15.3.5716/images/imgtile.png) no-repeat 0px -38px;
+	border: 1px solid #9CD1E8;
+	border-left-color: #B2E8FE;
+	border-top-color: #B2E8FE;
+	color: #069;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana;
+	font-size: 12px;
+	font-weight: bold;
+	height: 22px;
+	margin: 1px;
+	padding: 1px 5px 4px 26px;
+	vertical-align: top;
+	cursor:pointer;
+}
+button.white:active{
+	padding-top:2px;
+}
+
+
+/**
+ * ORANGE SIGNIN BUTTON
+ */
+
+button.orange{
+
+	/** IE && default */
+	background: #F17A1E url(http://secure.wlxrs.com/_D/F$Live.SiteContent.PROD.Connect/15.3.5716/images/imgtile.png) no-repeat 0 0;
+	/* filter overrides the image
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#F38920', endColorstr='#EF671D');
+	
+	/** Webkit */
+	background: url(http://secure.wlxrs.com/_D/F$Live.SiteContent.PROD.Connect/15.3.5716/images/imgtile.png) no-repeat 0 0, -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F6A038), to(#F78F38), color-stop(5%,#F6A038), color-stop(5%,#F38920), color-stop(95%,#EF671D), color-stop(95%,#F78F38));
+
+	/** FF */
+	background-image: url(http://secure.wlxrs.com/_D/F$Live.SiteContent.PROD.Connect/15.3.5716/images/imgtile.png),
+		-moz-linear-gradient(top, #F6A038 0px,#F6A038 1px, #F38920 1px, #EF671D 19px,#F78F38 19px);
+
+	border: 1px solid #F79449;
+	border-bottom-color: #F49530;
+	border-right-color: #F48643;
+
+	color: white;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana;
+	font-size: 9pt;
+	font-weight: bold;
+	height: 22px;
+	margin: 1px;
+	padding: 1px 5px 4px 26px;
+	vertical-align: top;
+	cursor:pointer;
+}
+button.orange:active{
+	padding-top:2px;
+}
+</style>
+</head>
+<body>
+	<h1>Live Experiments | Signin</h1>
+	<blockquote>
+		<p>Bespoke signin button: The events and style of the connect button (below) have been created without the the Messenger Connect Javascript API</p>
+	</blockquote>
+	<button onclick="signInOut()" class="orange" id="signin">loading..</button>
+</body>
+</html>

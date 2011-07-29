@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Signin</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+Microsoft.Live.Core.Loader.load([ "microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+
+</script>
+</head>
+
+<body>
+<h1>Live Experiments | Signin</h1>
+<span id="signin"></span>
+</body>
+</html>

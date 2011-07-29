@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Profile</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+
+</head>
+<body>
+	<h1>Live Experiments | Friends</h1>
+	<blockquote>
+		<p>Obtain the users contacts emails. This can be used to seemlessly find friends on the same site, or to send emails to these friends. </p>
+		<p><strong>Warning</strong>: this exposes your address book. So only well established sites may be granted privilege to use this otherwise restricted scope</p>
+	</blockquote>
+	<div id="signin"></div>
+	<pre>Please signin</pre>
+<script>
+
+	// Listen for login events
+	// Place this before WL.init so we may trigger it on page refresh too.
+	WL.Event.subscribe("auth.login", getFriends);
+
+	// Load the app
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	// Get Friends
+	function getFriends(e){
+		
+		var pre = document.getElementsByTagName("pre")[0];
+		pre.innerHTML = '';
+
+		// Do we have permission to collect emails
+		if(!WL.getSession()){
+			pre.innerHTML = "Please signin";
+		}
+		else if (WL.getSession().scope.indexOf("wl.contacts_emails")===-1) {
+			pre.innerHTML = "Please update your permissions by clicking here <button onclick='allowEmails();'>Update permissions</button>"; 
+			return;
+		}
+
+		WL.api("/me/contacts", function(r){
+			// Friends
+			var s='';
+
+			if(r.error){
+				s = "You do not have permission *perhaps*";
+			}
+			else {
+				// loop through and print out each key=>value pair.
+				for(var i=0;i<r.data.length;i++){
+					if(r.data[i].emails.preferred){
+						s += '<li><q>'+r.data[i].name+'</q> &lt;'+r.data[i].emails.preferred+'&gt;</li>';
+					}
+				}
+			}
+			pre.innerHTML = s;
+		});
+	};
+
+	// Update permissions to allow emails, this is only if the user has signed in from another page.
+	function allowEmails(){
+		WL.login({scope : "wl.basic, wl.signin, wl.contacts_emails"});
+	}
+
+	
+	WL.ui({ name: "signin", element: "signin", scope : "wl.basic, wl.signin, wl.contacts_emails" });
+</script>
+</body>
+</html>

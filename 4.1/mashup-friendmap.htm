@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | MashUp | FriendMap</title>
+	<script src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=6.3"></script>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<style>
+    img.contact{
+        background: url(http://secure.wlxrs.com/_D/F$Live.SiteContent.Messenger/4.2.59120/resources/images/Tile.DisplayPicture.Small.png) scroll no-repeat -80px 0;
+        padding:6px 8px 10px 8px;
+        height:23px;
+        width:23px;
+        cursor:pointer;
+        vertical-align:top;
+    }
+</style>
+<script>
+
+var map = null, 
+	layer = null;
+
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles", "microsoft.live.services"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View",
+		onload: "appLoaded"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        document.getElementById('signin')
+    );
+});
+
+/**
+ * Messenger connect has loaded.
+ */ 
+function appLoaded(){
+	var auth = Microsoft.Live.App.get_auth();
+	// register for notifications when auth state changes
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'state') return;
+	    if (auth.get_state()===Microsoft.Live.AuthState.authenticated){
+			getPointsPlotOnMap();
+		}
+	});
+}
+
+function getPointsPlotOnMap(){
+	/**
+	 * Set the clustering option for all the friends and profiles we shall add to our map
+	 */
+	layer = new VEShapeLayer();
+	var options =  new VEClusteringOptions(); 
+	options.Callback = function(clusters){
+		for (var i=0; i < clusters.length; ++i){
+			var cluster = clusters[i],
+				len = cluster.Shapes.length,
+				clusterShape = cluster.GetClusterShape(); 
+			
+			var friends = [], places = [];
+			for(var j=0;j<cluster.Shapes.length;j++){
+				friends.push(cluster.Shapes[j].GetTitle());
+				if(places.indexOf(cluster.Shapes[j].GetDescription())===-1){
+					places.push(cluster.Shapes[j].GetDescription());
+				}
+			}
+
+			clusterShape.SetTitle( len + " friends " + (places.length===1?' in ' + places[0]:'') ); 
+			clusterShape.SetDescription( friends.join(', ') ); 
+			clusterShape.SetCustomIcon( '<img class="contact" src="http://gfx2.hotmail.com/mail/uxp/w4/m4/pr014/ic/bluemann.png"/>' ); 
+		}
+	};
+	layer.SetClusteringConfiguration(VEClusteringType.Grid, options);
+
+	// Get profile and for the result call plotOnMap
+	getProfile(plotOnMap);
+	// Get friends and for the result call plotOnMap
+	getFriends(plotOnMap, function(){
+	     map.AddShapeLayer(layer);
+	});
+}
+
+function plotOnMap(json){
+	
+	if( !json.Locations || !(json.Locations[0].City||json.Locations[0].CountryRegion) ){
+		return;
+	}
+	
+	if(!json.FormattedName){
+		json.FormattedName = (json.FirstName||'') + ' ' + (json.LastName||'');
+	}
+	if(!json.FormattedName.match(/\w/)){
+		return;
+	}
+
+	var location = json.Locations[0];
+	location = filter([location.City, location.State, location.CountryRegion]).join(', ');
+
+	// Create a new pushpin
+	map.Find( null,
+			location,
+			null,
+			null,
+			0,
+			1,
+			true,
+			false,
+			true,
+			false,
+			function(a,b,places){
+				// Create a new pushpin
+				var shape = new VEShape(VEShapeType.Pushpin, places[0].LatLong);
+				shape.SetTitle(json.FormattedName);
+				console.log(location);
+				shape.SetDescription(places[0].Name);
+				shape.SetCustomIcon('<img class="contact" src="'+ (json.ThumbnailImageLink||'http://gfx2.hotmail.com/mail/uxp/w4/m4/pr014/ic/bluemann.png') +'"/>')
+
+				// we can just add this pin to the map
+				//map.AddShape(shape);
+				
+				// adding to the layer
+				layer.AddShape(shape);
+			});
+	
+}
+
+function getProfile(callback){
+    Microsoft.Live.App.get_dataContext().loadAll(Microsoft.Live.DataType.profile,
+    function (args) {
+		callback(args.get_data().get_item(0).get_resource());
+	});
+}
+
+function getFriends(callback, complete){
+	
+	// Loading friends
+	document.getElementById("process").innerHTML = "Loading friends...";
+
+	// Load contacts
+	Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.contacts, {}, function(e){
+
+		// Place this in a function to recursively get all the users contacts.
+		(function next(){
+			var d = e.get_data();
+			// Are there more results to retrieve
+			if( d.hasNextPage && d.hasNextPage() ){
+				d.loadNextPage(next);
+			}
+			else {
+				var i = 0,
+					d = e.get_data();
+
+				for (; i < d.get_length(); i++) {
+					// Push a JSON string to the array
+					callback(d.getItem(i).get_resource());
+				}
+				// remove warning
+				document.getElementById("process").innerHTML = "";
+				
+				// on complete
+				if(complete)
+					complete();
+			}
+		})()
+	});
+}
+
+
+
+function GetMap()
+{
+	map = new VEMap('myMap');
+	map.LoadMap(new VELatLong(0, 0), 2,'h' ,false);
+
+	var position = function(p){
+		map.SetCenterAndZoom(new VELatLong(p.coords.latitude, p.coords.longitude), 3);
+	};
+	if("geolocation" in navigator){
+		navigator.geolocation.getCurrentPosition(position);
+	}
+}
+
+function resize(){
+	var m = document.getElementById('myMap');
+	m.style.height=(window.innerHeight-m.offsetTop-10)+'px';
+}
+
+function filter(a){
+	var r=[];
+	for(var i=0;i<a.length;i++){
+		if(a[i])
+			r.push(a[i]);
+	}
+	return r;
+}
+
+</script>
+</head>
+<body onload="resize();GetMap();"  onresize="resize()" onscroll="resize()">
+	<h1>Live Experiments | MashUp | FriendMap</h1>
+	<blockquote>
+		<p>Place all your friends on the map below, first signin <span id="signin"></span> <span id="process"></span></p>
+	</blockquote>
+	<div id='myMap' style="position:relative; width:100%; height:1000px;"></div>
+</body>
+</html>   

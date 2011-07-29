@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Signin</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+</head>
+<body>
+	<h1>Live Experiments | Signin</h1>
+	<button id="login" onclick="login();">Connect</button>
+
+	<script>
+		
+		WL.Event.subscribe('auth.sessionChange', function(e){
+			document.getElementById('login').innerHTML = ( e.status === "connected" ? "Sign out" : "Connect" );
+		});
+		WL.init({
+			client_id: CLIENT_ID,
+	 		redirect_uri: window.location.href
+		});
+
+		function login(){
+			if( WL.getSession() === null )
+				WL.login( {scope:"wl.signin"} );
+			else 
+				WL.logout();
+		}
+
+	</script>
+
+</body>
+</html>

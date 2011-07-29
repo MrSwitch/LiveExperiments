@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Calendar</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"/> 
+
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+	
+	<!-- Applications connect credentials -->
+	<script src="connect.php"></script>
+	
+	<!-- CUSTOM CONTROLS FOR CONNECT  -->
+	<script src="custom-connect.js" ></script>
+<script>
+	
+/**
+ * Add calendar events to target list
+ * Uses JSONP to communicate with the server and return events from the calendar
+ * There is not a javascript API to access the calendar as yet.
+ */
+function getCalendars(target){
+
+	if( !getState() || !getAccessToken() ){
+		alert("Please signin first");
+		return;
+	}
+
+	// Build the querystring, which includes our live.token and statement of the formats we're sending and receiving
+	var qs = '$format=json&$headers=Accept%3Aapplication%2Fjson%3BContent-Type%3Aapplication%2Fjson%3B&$accessToken='+encodeURIComponent(getAccessToken())+'&$callback=?';
+
+	// Get the environment
+	// This includes all items that we have a scope for
+	$.getJSON('https://apis.live.net/v4.1/?'+qs, function(json){
+
+		// Using CalendarLink we get the profile data
+		$.getJSON(json.CalendarLink+'?'+qs, function(json){
+
+			// Get the Calendars
+			$.getJSON( json.BaseUri+json.CalendarsLink + '?'+qs, function(json){
+				// Lets loop through the calendars in our JSON list and print them out.
+				var s ='';
+				$(json.Entries).each(function(){
+					s += this.Title+'<br>';
+				});
+				$(target).html(s);
+				
+			});
+		});
+	});
+}
+</script>
+</head>
+<body>
+	<h1>Live Experiments | Calendar</h1>
+	<blockquote>
+		<p>Bespoke Calendar and Signin button: The events and style of the connect button (below) have been created without the the Messenger Connect Javascript API</p>
+	</blockquote>
+	<button onclick="signInOut()" class="orange" id="signin">loading..</button>
+	<button onclick="getCalendars(document.getElementsByTagName('ul')[0])">Get Calendar</button>
+	<ul></ul>
+	
+</body>
+</html>

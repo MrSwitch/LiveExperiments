@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Getting Started</title>
+	<link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+	<h1>Live Experiments | Start</h1>
+	<blockquote>
+		<p>
+			This no bullshit guide takes you from zero to a <a href="http://dev.live.com">Windows Live</a> authentication system on your website.
+		</p>
+	</blockquote>
+	
+	<h2>Step 1: Register your domain/site</h2>	
+	<ol>
+		<li>Go to <a href="http://manage.dev.live.com">http://manage.dev.live.com</a> and signin</li>
+		<li>Find and click on the link "Create Application" and provide information about your environment domain</li>
+		<li>Save the form and make a note of the "<strong>Client ID</strong>"</li>
+	</ol>
+	
+	<h2>Step 2: Build a simple test script</h2>
+	<p>Pop your <strong>client_id</strong> in the script below, save the script 
+	so you can run it from the domain you registered.</p>
+	<pre class="demo">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;script src=&quot;http://js.live.net/v5.0/wl.js&quot;&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+	&lt;div id=&quot;signin&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+	WL.init({
+		client_id: <strong><em>CLIENT_ID</em></strong>,
+		redirect_uri: window.location.href
+	});
+	WL.ui({ name: &quot;signin&quot;, element: &quot;signin&quot;, scope : &quot;wl.basic&quot; });
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+	<p>Now fire it up on your dev enviroment. The button on this page will trigger the consent flow and the text will 
+	change from &quot;Connect&quot; to &quot;Sign out&quot;.... so you know your signed in.</p>
+	
+	<h2>Step 3: Now go!</h2>
+	<p>Explorer the demo's under the 5.0 column on the <a href="../">homepage</a> and uses the forums 
+	links at the bottom if you can&#39;t find something.</p>
+</body>
+
+</html>

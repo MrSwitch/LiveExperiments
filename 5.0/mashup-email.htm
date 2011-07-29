@@ -1,0 +1,466 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Experiments: Autocomplete Email Address in Form</title>
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+
+
+	<script src="images/modernizr.js"></script>
+	<script src="images/jquery.placeholder.js"></script>
+	<script src="images/jquery.tooltip.js"></script>
+	<link rel="stylesheet" href="images/jquery.tooltip.css"/>
+	
+
+	
+<script type="text/javascript">
+
+function getData(){
+
+	var $people = $("textarea[name=people]");
+	
+	// Do we have permission to collect emails
+	if (!WL.getSession()
+			|| WL.getSession().scope.join("").indexOf("wl.contacts_emails")===-1
+			|| WL.getSession().scope.join("").indexOf("wl.basic")===-1) {
+
+		$people.addClass('failed').val('Please Click Service Above');
+		return;
+	}
+	// Get "From" address
+	WL.api('me', function(r){
+		if(r.emails&&r.emails.preferred){
+		 	$('form input[name=from]').val(r.emails.preferred);
+		}
+		$(".profile").html("<img src='https://apis.live.net/v5.0/me/picture?access_token=?"+WL.getSession().access_token+"'/>" + r.name);
+	});
+
+	// Get Contacts
+	WL.api("/me/contacts", function(r){
+		// Friends
+		var s='', a=[];
+
+		// loop through and print out each key=>value pair.
+		for(var i=0;i<r.data.length;i++){
+			if(r.data[i].emails.preferred){
+            	a.push({label:r.data[i].name + " <" + r.data[i].emails.preferred + ">", value:r.data[i].emails.preferred});
+			}
+		}
+
+		var separator = /;\s+/;
+
+		// Add the result to the AutoComplete
+		$people.autocomplete({
+			source: function( request, response ) {
+				// delegate back to autocomplete, but extract the last term
+				response( $.ui.autocomplete.filter(
+					a, request.term.split( separator ).pop() ) );
+			},
+			multiple:true, 
+			minLength: 0, 
+			focus: function() {
+				// prevent value inserted on focus
+				return false;
+			},
+			select : function(e,ui){
+				// Get the list of selected addresses
+				var a = this.value.split( separator );
+				// remove the current input
+				a.pop();
+				// add the selected item
+				a.push( ui.item.value );
+				// add placeholder to get the comma-and-space at the end
+				a.push( "" );
+				// Update the value with all the items in the list
+				this.value = a.join( "; " );
+				// Find people
+				$people.trigger('keyup');
+				/// prevent default
+				return false;
+			}
+		}).attr({placeholder:'Start typing your contacts name',disabled:false});
+		
+		var i = document.createElement('input');
+		if(!('placeholder' in i)){
+			$people.val("").placeholder();
+		}
+		
+		
+	});
+
+	$people
+		.bind( "keydown", function( event ) {			// don't navigate away from the field on tab when selecting an item
+			if ( event.keyCode === $.ui.keyCode.TAB &&
+					$( this ).data( "autocomplete" ).menu.active ) {
+				event.preventDefault();
+			}
+		})
+		.bind('keyup', function(){
+			// Make the textbox grow vertically
+			while (
+				this.rows > 1 &&
+				this.scrollHeight < this.offsetHeight
+			){
+				this.rows--;
+			}
+			var h=0;
+			while (this.scrollHeight > this.offsetHeight && h!==this.offsetHeight)
+			{
+				h=this.offsetHeight;
+				this.rows++;
+			}
+		});
+
+}
+
+// Update permissions to allow emails, this is only if the user has signed in from another page.
+function allowEmails(){
+	WL.login({scope : "wl.basic, wl.contacts_emails"});
+}
+
+$(document).ready(function(){
+
+	// Ensure we are using the whole window
+	$(window).resize(function(){
+		$(".container").css({
+			height: $(window).height(),
+			width:$(window).width()
+		});
+	}).trigger('resize');
+	
+	// Tooltips
+	$('span[title]').tooltip();
+	
+	// placeholder
+	var i = document.createElement('input');
+	if(!('placeholder' in i)){
+		$(":input[placeholder]").placeholder();
+	}
+
+	// Listen for login events
+	// Place this before WL.init so we may trigger it on page refresh too.
+	WL.Event.subscribe("auth.statusChange", function(e){
+		
+		if(e.status!=="connected"){
+			return;
+		}
+		
+    	$('body').addClass('signedin');
+    	$('form input[name=people]').val('Loading Contacts');
+
+		getData();
+	});
+
+
+	// Load the app
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	// Add controls to the button
+	$(".signin").click(allowEmails);
+
+
+	// Form
+	$("form textarea[name=message]").html($("form textarea[name=message]").html()+window.location.href);
+
+	// Create our code samples directly from the scripts in the page
+	// this is one of my favourite demonstration hacks and makes the source code very easy to read
+	$('body script').each(function(){
+		$("<pre></pre>").text($(this).html().replace("\n",'')).insertAfter(this).highlight();
+	});
+	$('form').submit(function(){
+		
+		alert("Thanks this feature isn't hooked up, as this is a service you would provide");
+		return false;
+	});
+});
+
+	$('.modal-close').live('click',function(){$("div.start").show();$(".modal").hide();});
+	$('.modal-open').live('click',function(){$("div.start").hide();$(".modal").fadeIn('fast');});
+
+	</script>
+<style>
+body{
+	margin:0;
+	padding:0;
+	min-height:100%;
+	font-family:Arial, "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+	background:url(http://dl.dropbox.com/u/232969/HTML/scrollerCanvas/images/back.jpg) no-repeat top center;
+	background-size:100% 100%;
+	font-size:1em;
+}
+button{
+	border:none;
+	background:#222222;
+	filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0,startColorstr='#FFFFFFFF', endColorstr='#FFEEEEEE');
+	background:-webkit-gradient(linear,left top, left bottom, from(rgba(255,255,255,0.2)), to(rgba(0,0,0,0.2)), 
+				color-stop(50%,rgba(255,255,255,0)), 
+				color-stop(50%,rgba(0,0,0,0)));
+	background: -moz-linear-gradient(rgba(255,255,255,0.2) 0,rgba(255,255,255,0) 49%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.2) 100%);
+
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 1px;
+    -webkit-box-shadow: rgba(255, 255, 255, 0.1) 0 1px inset,
+                        rgba(0, 0, 0, 0.4) 0px 1px 1px;
+    -moz-box-shadow: rgba(255, 255, 255, 0.1) 0 1px inset,
+                        rgba(0, 0, 0, 0.4) 0px 1px 1px;
+	text-shadow:rgba(0, 0, 0, 0.4) 0px 1px;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	padding:3px 6px;
+	color:#1b1b1b;
+	-webkit-user-select:none;
+	-moz-user-select:none;
+	font-family:"Lucida Grande", Arial, sans-serif;
+	font-size:13px;
+	cursor:pointer;
+	vertical-align: middle;
+}
+/*
+button.black:hover{
+	filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0,startColorstr='#30FFFFFF', endColorstr='#30DDDDDD');
+	background-color:white;
+	color:black;
+	background:-webkit-gradient(linear,left top, left bottom, from(rgba(255,255,255,0.2)), to(rgba(0,0,0,0.3)));
+	background: -moz-linear-gradient(rgba(255,255,255,0.2) 0,rgba(0,0,0,0.3) 100%);
+}
+	button:hover{
+		color:white;
+		-moz-box-shadow: 0 1px 2px rgba(255,255,255,0.3);
+		-webkit-box-shadow: 0 1px 2px rgba(255,255,255,0.3);
+	}
+*/
+	button:active,button.active{
+		box-shadow: rgba(0, 0, 0, 0.4) 0px 1px 1px;
+	    -webkit-box-shadow: rgba(255, 255, 255, 0.2) 0 1px,
+	                        rgba(0, 0, 0, 0.7) 0px 1px 3px inset,
+	                        rgba(0, 0, 0, 0.1) 0px -5px 12px inset;
+	    -moz-box-shadow: rgba(255, 255, 255, 0.2) 0 1px,
+	                        rgba(0, 0, 0, 0.7) 0px 1px 3px inset,
+	                        rgba(0, 0, 0, 0.1) 0px -5px 12px inset;
+		text-shadow:white 0 0 5px;
+		color:white;
+	}
+/* Modal */
+.modal{
+	z-index:10001;
+	text-align:center;
+}
+.modal-open{
+	opacity:0.5;
+	cursor:pointer;
+}
+.modal-open:hover{
+	opacity:0.6;
+}
+.modal .modal-container{
+	vertical-align:middle;
+	text-align:left;
+	margin:auto;
+	width:600px;
+	background:white;	
+	border:5px solid #c9c9c9;
+	border-radius:15px;
+	/* -moz-border-radius:10px; /* gets funky when overlaying flash */
+	padding:20px;
+	box-shadow:2px 2px 10px black;
+	-webkit-box-shadow:2px 2px 15px black;
+}
+	.modal hr{
+		border:0;
+		height:1px;
+		background-color:#CCC;
+	}
+		.modal .header{
+			height:30px;
+		}
+		.modal .header:after{
+			content:".";
+			clear:both;
+		}
+		.modal h2{
+			font-size:2em;
+			font-weight:bold;
+			padding:0;
+			margin:0;
+			float:left;
+			line-height: 1em;
+		}
+			.modal h2 a{
+				color:white;
+			}
+			.modal h2 a:hover{
+				color:#ccc;
+			}
+		.modal .profile{
+			float:right;
+		}
+			.modal .profile img{
+				width:24px;
+				vertical-align:middle;
+				margin-right:8px;
+			}
+
+	.modal-close{
+		float: right;
+		font-weight: bold;
+		margin-right: -33px;
+		margin-top: -33px;
+	}
+
+.modal-bg{
+	width:100%;
+	height:100%;
+	margin:0;
+	padding:0;
+	top:0;
+	left:0;
+	position:fixed;
+	background-color:black;
+	opacity:0.8;
+	filter:alpha(opacity=80);
+	z-index:10000;
+}
+iframe.modal-bg{
+	opacity:0;
+	filter:alpha(opacity=0);
+}
+form label{
+	width:15%;
+	display:inline-block;
+	vertical-align:top;
+	font-weight:bold;
+	margin-top:7px;
+}
+input, textarea{
+	width:82%;
+	display:inline-block;
+	font-family:inherit;
+	font-size:inherit;
+	border-radius:5px;
+	border:1px solid #c9c9c9;
+	margin-bottom:10px;
+	padding:3px;
+}
+textarea{
+	overflow:auto;
+}
+
+div.prefill{
+	background:#edebec;
+	border-radius:5px;
+	color:black;
+	padding:10px;
+}
+	div.prefill h3{
+		line-height:1em;
+		margin-bottom:15px;
+		font-size:1.1em;
+		margin-top: 10px;
+	}
+	div.prefill h3 span{
+		color:gray;
+	}
+	div.prefill button{
+		border-radius:5px;
+		border:1px solid #c9c9c9;
+		line-height:1em;
+		margin-right:8px;
+		margin-left:0;
+	}
+
+	div.prefill button:hover{
+		background-color:white;
+		-webkit-transition:0.2s;
+	}
+
+
+hr, div.prefill, form, div.actions {
+	margin-top:10px;
+}
+
+	div.actions {
+		vertical-align:middle;
+		text-align:right;
+	}
+		div.actions .cancel{
+			margin-right:20px;
+		}
+		div.actions button{
+			font-weight:bold;
+			background-color:#222;
+			color:white;
+			width:100px;
+			padding:8px 0;
+			text-align:center;
+		}
+
+.container{
+	display: table-cell;
+	vertical-align: middle;
+	text-align:center;
+}
+
+.placeholder{
+	color:#ccc;
+}
+
+.ui-menu {
+}
+.ui-menu .ui-menu-item a {
+	font-size: 0.7em;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="start">
+	<img class="modal-open" src="http://icons.iconarchive.com/icons/creativenerds/wooden-social/128/share-icon.png" />
+</div>
+
+<div class="modal" style="display:none;">
+	<div class="modal-container">
+		<img src="images/close_icon.png" class="modal-close" />
+		<div class="header">
+			<h2>EMAIL</h2>
+			<div class="profile"></div>
+		</div>
+		<hr />
+		<div class="prefill">
+			<h3>Import contacts from: <span title="Can’t remember your friend’s email address? Connect to your favorite email provider or social network to access your address book right from here">why?</span></h3>
+			<button class="signin"><img src="images/hotmail_logo_btn.png"/></button>
+			<button class="signin"><img src="images/messenger_logo_btn.png"/></button>
+		</div>
+		<div class="column">
+			
+			<form>
+				<label>From</label>    <input type="text" name="from" value="" placeholder="e.g. me@example.com" /><br/>
+				<label>To</label>     <textarea type="text" name="people" value="Signin to load contacts" placeholder="e.g. friend@example.com" rows="1"></textarea><br />
+				<label>Subject</label> <input type="text" name="subject" value="Have you seen Messenger Connect?"/><br />
+				<label>Message</label>
+<textarea name="message" rows="6" >
+Hi, 
+The API lets you send emails like this one!
+Take a peek at 
+</textarea><br />
+				<hr />
+				<div class="actions">
+					<a class="cancel">cancel</a> <button class="black" type="submit">Send</button> <span class="status"></span>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+</body>
+</html>

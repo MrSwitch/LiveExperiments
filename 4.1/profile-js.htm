@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Profile</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<style>
+	pre span{
+		font-weight:bold;
+		color:black;
+	}
+</style>
+<script>
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload: "appLoaded"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+
+function appLoaded (){
+	var auth =  Microsoft.Live.App.get_auth();
+	// Listen to property onchange events
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'state') return;
+		if( auth.get_state() === Microsoft.Live.AuthState.authenticated ){
+			getProfile();
+		}
+	});
+}
+
+
+function getProfile(){
+
+    Microsoft.Live.App.get_dataContext().loadAll(Microsoft.Live.DataType.profile,
+    function (args) {
+		var profile = args.get_data().get_item(0).get_resource(),
+			emails = [],
+			i = profile.Emails.length;
+
+		for(;i--;)
+			emails.push(profile.Emails[i].Address);		
+		
+		
+		var o = {
+			name  : profile.FirstName + " " + profile.LastName,
+			email :  emails.join('<br/>'),
+			pic   : "<img style='vertical-align:middle;' src='"+profile.ThumbnailImageLink+"'/>",
+			location : profile.Location,
+			gender : ["?","Female","Male"][profile.Gender]
+		};
+		for(var x in o){
+			document.getElementById(x).innerHTML = o[x];
+		}
+		console.log(profile);
+	});				
+
+}
+
+</script>
+</head>
+
+<body>
+<h1>Live Experiments | Profile</h1>
+	<blockquote>
+		<p>Displays a users profile information, first connect <span id="signin"></span></p>
+	</blockquote>
+
+<pre>
+	name:    <span id="name"></span>
+	email:   <span id="email"></span>
+	picture: <span id="pic"></span>	
+	location:<span id="location"></span>	
+	gender:  <span id="gender"></span>	
+</pre>
+</body>
+</html>

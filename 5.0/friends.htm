@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Profile</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+</head>
+<body>
+	<h1>Live Experiments | Friends</h1>
+	<div id="signin"></div>
+	<pre></pre>
+<script>
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	WL.Event.subscribe("auth.login", getFriends);
+	WL.getLoginStatus(getFriends);
+
+	function getFriends(e){
+		if(e.status === "unknown"){
+			return;
+		}
+		
+		WL.api("/me/friends", function(r){
+			// Friends
+			// use an access_token param for private users avatars
+			// ommitting will display the default picture for those private users.
+			var s='',
+				t=encodeURIComponent(WL.getSession().access_token);
+
+			if(r.error){
+				s = "You do not have permission *perhaps*";
+			}
+			else {
+				// loop through and print out each key=>value pair.
+				for(var i=0;i<r.data.length;i++){
+					s += '<li><img src="https://apis.live.net/v5.0/'+r.data[i].id+'/picture?access_token='+t+'" style="width:16px;"/><q>'+r.data[i].name+'</q></li>';
+				}
+			}
+			document.getElementsByTagName("pre")[0].innerHTML = s;
+		});
+	};
+	WL.ui({ name: "signin", element: "signin", scope : "wl.basic, wl.signin" });
+</script>
+</body>
+</html>

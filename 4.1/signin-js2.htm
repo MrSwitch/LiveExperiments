@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Signin</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload: "appLoaded"
+	});
+	// Attach events to the click button
+	document.getElementById("sign").onclick = function(){
+		// Attach the windows live Signin events
+		if(Microsoft.Live.App.get_auth().get_state() === Microsoft.Live.AuthState.authenticated ){
+			Microsoft.Live.App.signOut();
+		} else {
+			Microsoft.Live.App.signIn();
+		}
+	};
+});
+	function appLoaded (){
+		var auth =  Microsoft.Live.App.get_auth();
+		// Listen to property onchange events
+		auth.add_propertyChanged( function(sender,e){
+			document.getElementById("sign").innerHTML = ( auth.get_state() === Microsoft.Live.AuthState.authenticated ? "Sign Out" : "Connect" );
+		});
+	}	
+	</script>
+</head>
+
+<body>
+	<h1>Live Experiments | Signin</h1>
+	<button id="sign">Connect</button>
+</body>
+</html>

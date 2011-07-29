@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Friends</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script>
+
+Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles"], function () {
+	Microsoft.Live.App.initialize({
+		channelurl:"channel.htm",
+		callbackurl:connect.url,
+		clientid:connect.clientId,
+		scope:"WL_Profiles.View,WL_Contacts.View,Messenger.Signin",
+		onload: "appLoaded"
+	});
+    $create(Microsoft.Live.UI.SignIn,
+        {},
+        {},
+        {},        
+        $get('signin')
+    );
+});
+
+
+function appLoaded(){
+	var auth = Microsoft.Live.App.get_auth();
+	// register for notifications when auth state changes
+	auth.add_propertyChanged( function(sender,e){
+	    if (e.get_propertyName() != 'state') return;
+	    if (auth.get_state()===Microsoft.Live.AuthState.authenticated){
+			getFriends();
+		}
+	});
+};
+
+/**
+ * Get the users friends
+ */
+function getFriends(){
+
+	var ul = document.getElementsByTagName("ul")[0];
+	
+	//Placeholder
+	ul.innerHTML = "Loading friends...";
+
+	// Load contacts
+	Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.contacts, {}, function(e){
+
+		// Place this in a function to recursively get all the users contacts.
+		(function next(){
+			var d = e.get_data();
+			
+			// Have we got more results to get?
+			if( d.hasNextPage && d.hasNextPage() ){
+				d.loadNextPage(next);
+			}
+			else {
+				var li = '',
+					i = 0,
+					d = e.get_data(),
+					json,
+					a = [];
+
+				for (; i < d.get_length(); i++) {
+					// Push a JSON string to the array
+					json = d.getItem(i).get_resource();
+					if(json.FormattedName)
+						a.push(json);
+				}
+				// Order results
+				a.sort(function(a,b){
+					return (a.FormattedName&&(a.FormattedName.toLowerCase()>b.FormattedName.toLowerCase())?1:-1);
+				})
+				
+				// Print retults
+				for(i=0;i < a.length; i++){
+					li += "<li>"+a[i].FormattedName +'</li>';
+				}
+				ul.innerHTML = "Found " + i + " contacts: "  + li;
+			}
+		})()
+
+	});
+}
+
+</script>
+</head>
+<body>
+	<h1>Live Experiments | Friends</h1>
+	<div id="signin"></div>
+	<ul></ul>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Status Message</title>
+	<script src="http://js.live.net/4.1/loader.js"></script>
+	<link rel="stylesheet" href="../style.css"/>
+	<script src="connect.php"></script>
+<script type="text/javascript">
+
+	Microsoft.Live.Core.Loader.load(["microsoft.live.ui", "microsoft.live.ui.styles", "microsoft.live.services"], function () {
+		Microsoft.Live.App.initialize({
+			channelurl:"channel.htm",
+			callbackurl:connect.url,
+			clientid:connect.clientId,
+			scope:"WL_Profiles.View,WL_Contacts.View,WL_Profiles.UpdateStatus,WL_Activities.Update",
+			onload: "appLoaded"
+		});
+	    $create(Microsoft.Live.UI.SignIn,
+	        {},
+	        {},
+	        {},        
+	        $get('signin')
+	    );
+	});
+	
+	/**
+	 * Load app
+	 */
+	var loaded = false;
+	function appLoaded(){
+		loaded = true;
+	}
+
+	/**
+	 * Status to the Users activity feed.
+	 * @param string status_message
+	 */
+	function addStatusActivity(message){
+		if(!loaded){
+			alert("Please wait for loading");
+			return;
+		}
+		Microsoft.Live.App.get_dataContext().load(Microsoft.Live.DataType.myActivities, {}, function(e){ 
+			var myActivitiesCollection = e.get_data(); 
+			if (myActivitiesCollection) {
+				var statusActivityObject = new Microsoft.Live.Services.StatusActivityObject(message);
+				statusActivityObject.set_content("TEST " + new Date()); 
+				var addStatusActivity = new Microsoft.Live.Services.AddStatusActivity([statusActivityObject], window.location.href); 
+				if (addStatusActivity.validateParams([statusActivityObject], window.location.href)) { 
+					myActivitiesCollection.add(addStatusActivity);
+					myActivitiesCollection.save(function(e){
+						alert((e.get_results()[0].get_resultCode() === Microsoft.Live.AsyncResultCode.success?'Success':'Fail')+', posting status activity');
+					});
+				}
+			}
+		})
+	}
+	
+	function addStatusMessage(message){
+		if(!loaded){
+			alert("Please wait for loading");
+			return;
+		}
+            var statusMessage = new Microsoft.Live.Services.StatusMessage('', window.location.href);
+
+            statusMessage.set_statusLink(window.location.href);
+            statusMessage.set_linkTitle(message);
+
+		Microsoft.Live.App.get_dataContext().post(statusMessage, function (e) {
+			alert((e.get_results()[0].get_resultCode() === Microsoft.Live.AsyncResultCode.success?'Success':'Fail')+', posting status message');
+		});
+	}
+
+
+</script>
+</head>
+
+<body>
+	<h1>Live Experiments | Status Message</h1>
+	
+	<blockquote>
+		<p>Use the buttons below to publish a new status activity to the feed <span id="signin"></span></p>
+	</blockquote>
+    <button onclick="addStatusActivity(this.innerHTML)">Add status activity</button>
+    <button onclick="addStatusMessage(this.innerHTML)">Add status message</button>
+</body>
+</html>

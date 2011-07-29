@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Live Experiments | Status</title>
+	<link rel="stylesheet" href="../style.css" />
+	<script src="http://js.live.net/v5.0/wl.js"></script>
+	<script src="CLIENT_ID.js"></script>
+</head>
+<body>
+	<h1>Live Experiments | Status</h1>
+	<div id="signin"></div>
+	<img src="images/isdk.gif" id="image" style="width:70px;"/> <input type="text" value="Testing Microsoft Connect" id="msg" /> <button onclick="addStatus();">Update status</button> <span></span>
+<script>
+
+	WL.init({
+		client_id: CLIENT_ID,
+ 		redirect_uri: window.location.href
+	});
+
+	function addStatus(){
+		if(WL.getSession() === null || WL.getSession().scope.indexOf("wl.share") === -1 ){
+			WL.login({scope:"wl.share"}, function(){addStatus();});
+			return;
+		}
+		WL.api( "me/share", 
+				"POST", 
+				{ 
+					message: document.getElementById('msg').value,
+					picture: (function(){var img = document.getElementById('image'); return img.src.match('http:')?img.src:img.getAttribute('src',4);})(),
+					link : window.location.href,
+					description : "Experiments of Messenger Connect v5.0",
+					name : "Live Experiments"
+				}, 
+				function(r){
+					// Did it work
+					var span = document.getElementsByTagName("span")[0];
+					span.innerHTML = (r.error ? r.error.message : "Successfully updated status");
+					span.style.color = (r.error?"red":'green');
+				});
+	};
+</script>
+</body>
+</html>
