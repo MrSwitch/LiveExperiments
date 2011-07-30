@@ -1,0 +1,558 @@
+﻿body{
+	font-family:Helvetica;
+	background-color:#111;
+	font-size:13px;
+}
+
+h1{
+	color:gray;
+	position:absolute;
+}
+
+.chat_box{
+	margin:auto;
+	width:350px;
+	background-color:#1B1B1B;
+	background:#1B1B1B 
+	-moz-linear-gradient(270deg, 
+		#555, 
+		#1B1B1B 50px, 
+		black 50px, 
+		black 51px,
+		black 52px,
+		rgba(255,255,255,0) 53px
+	);
+	border:1px solid black;
+}
+	.chat_box .top{
+		padding:15px 10px;
+		background-color:#555;
+		background:#1B1B1B -moz-linear-gradient(
+			270deg, 
+			#555, 
+			#1B1B1B 50px,
+			black 50px, black 51px
+		);
+		background-image:-webkit-gradient(linear, left top, left bottom, from(#555), color-stop(0.95, #1B1B1B), color-stop(0.97, black), to(#AAA));
+		color:white;
+	}
+		.chat_box .top .showhide{
+			border:7px solid transparent;
+			border-top:7px solid white;
+			height:0px;
+			display:block;
+			margin:4px;
+			width:0px;
+			float:left;
+		}
+			.chat_box .top .showhide.show{
+				border:7px solid transparent;
+				border-left:7px solid white;
+			}
+		.chat_box .top .mesenger{
+			text-shadow: 1px 1px 2px black;
+		}
+		.chat_box .top .sign{
+			float:right;
+			width: 112px;
+			height: 20px;
+				font-family: Verdana,Arial,sans-serif !important;
+				text-align:center;
+				cursor:pointer;
+			background:#222 -moz-linear-gradient(90deg, #ccc 0px, #ccc 1px, #222 1px, #555);
+			background-image:-webkit-gradient(linear, left bottom, left top, to(#555), from(#222));
+			border:1px ridge black;
+			-moz-border-radius:5px;
+			-webkit-border-radius:5px;
+			padding:2px 0;
+			color:white;
+			margin-top:-6px;
+		}
+			.chat_box .top .sign:hover{
+				text-decoration: underline;
+			}
+		
+			.chat_box.signingin .top .sign .signin,
+			.chat_box.signingin .top .sign .signout{
+				display:none;
+			}
+			.chat_box.signedin .top .sign .signingin,
+			.chat_box.signedin .top .sign .signin{
+				display:none;
+			}
+			.chat_box.signedout .top .sign .signout,
+			.chat_box.signedout .top .sign .signingin{
+				display:none;
+			}
+
+		.chat_box .top .show{
+			display:inherit !important;
+		}
+		
+
+	.chat_box .body{
+		overflow:hidden;
+		height:0;
+	}
+	.chat_box .body.show{
+		--display:block;
+	}
+	.chat_box button{
+		background:#222;
+		background:#222 -moz-linear-gradient(
+			90deg, 
+			#ccc 0px, 
+			#ccc 1px, 
+			rgba(80,80,80,0) 1px,
+			#555
+		);
+		background-image:-webkit-gradient(linear, left bottom, left top, to(#555), from(rgba(80,80,80,0)));
+		border:1px ridge black;
+		-moz-border-radius:5px;
+		-webkit-border-radius:5px;
+		padding:2px 0;
+		color:white;
+	}
+		.chat_box button:hover{
+			background-color:#444;
+		}
+		.chat_box button:focus{
+			background-color:#666;
+		}
+	.chat_box div.shout{
+		padding:10px;
+	}
+		.chat_box div.shout input{
+			background-color:#636365;
+			border:none;
+			padding:2px;
+			width:75%;
+			color:white;
+			height:20px;
+		}
+		.chat_box div.shout button{
+			width:22%;
+		}
+	.chat_box .contacts-control{
+		width:auto;
+		margin:0 10px;
+		height:auto;
+		border:1px solid #111;
+		border-bottom:none;
+		padding:2px;
+		background-color:#333;
+		color:white;
+	}
+		.chat_box .contacts-control .inner{
+			padding:10px 0;
+			border-bottom:1px solid gray;
+			margin:0 5px;	
+		}
+		.chat_box .contacts-control .share{
+			float:right;
+			padding:5px;
+			margin-top:-5px;
+			cursor:pointer;
+		}
+		.chat_box .contacts-control .share:hover{
+			background:#555;
+			-moz-border-radius:4px;
+			-webkit-border-radius:4px;
+		}
+			.chat_box .contacts-control .share div{
+				margin-top:3px;
+				display:none;
+				position:absolute;
+				background:#555;
+				-moz-border-radius:4px;
+				-webkit-border-radius:4px;
+				-moz-border-radius-topright:0;
+				-webkit-border-top-right-radius:0;
+			}
+			.chat_box .contacts-control .share div.focus{
+				display:block;
+			}
+				.chat_box .contacts-control .share ul{
+					list-style:square inside;
+					margin:10px;
+					padding:0;
+					max-height:150px;
+					overflow:auto;
+				}
+					.chat_box .contacts-control .share li{
+						color:lime;
+						padding:5px;
+						-webkit-transition: background 1s;
+					}
+					.chat_box .contacts-control .share li:hover{
+						background:#222;
+					}
+					.chat_box .contacts-control .share a{
+						color:white;
+						text-decoration:none;
+					}
+						.chat_box .contacts-control .share a img{
+							border:none;
+						}
+
+	.chat_box .contacts{
+		width:auto;
+		margin:0 10px;
+		height:auto;
+		max-height:400px;
+		min-height:300px;
+		overflow:auto;
+		border:1px solid #111;
+		border-top:none;
+		---padding:2px;
+		background-color:#333;
+		color:white;
+	}
+		.chat_box .contacts .nocontacts{
+			content:'no contacts replace with image';
+			width:100%;
+			height:200px;
+		}
+		.chat_box .contacts ul{
+			padding:0;
+			margin:0;
+		}
+			/**
+			 * CONTACT
+			 */
+			.chat_box .contacts li{
+				padding:5px;
+				margin:0;
+				list-style-position:inside;
+				list-style-type:square;
+				color:lime;
+				-webkit-transition-property: background;
+				-webkit-transition-duration: 0.5s;
+			}
+				.chat_box .contacts li .info{
+					width:90%;
+					color:white;
+					display:inline-block;
+					vertical-align:top;
+				}
+					.chat_box .contacts li span.name{
+						color:inherit;
+					}
+					.chat_box .contacts li span.shout:before{
+						content:' - ';
+					}
+					.chat_box .contacts li span.shout{
+						color:lightgray;
+						opacity:0;
+					}
+					.chat_box .contacts .btn_sync,
+					.chat_box .contacts .watching{
+						display:none;
+					}
+					.chat_box .contacts .btn_sync{
+						float:right;
+					}
+					.chat_box .contacts .watching{
+						color:#444;
+						padding:7px 0;
+					}
+						.chat_box .contacts .watching a{
+							color:black;
+						}
+			.chat_box .contacts li .messaging{
+				display:none;
+				clear:both;
+			}
+		/**
+		 * CONTACT - SELECTED
+		 */
+		.chat_box .contacts li.selected{
+			background-color:#888;
+			background:-moz-linear-gradient(270deg, #CCC 0, #555 60px);
+			background-image:-webkit-gradient(linear, 0% 0%, 0% 100%, to(#555), from(#ccc));
+		}
+			.chat_box .contacts li.selected .info{
+				color:black;
+			}
+				.chat_box .contacts li.selected span.shout{
+					color:#444;
+				}
+				.chat_box .contacts li.selected .info span{
+				}
+				.chat_box .contacts li.selected .btn_sync,
+				.chat_box .contacts li.selected .watching,
+				.chat_box .contacts li.hover .btn_sync,
+				.chat_box .contacts li.hover .watching{
+					display:block;
+				}
+			.chat_box .contacts li.selected .messaging{
+				display:block;
+			}
+		.chat_box .contacts li.hover{
+			background:rgba(34,34,34,.95);
+			position:absolute;
+		}
+			.chat_box .contacts li.hover .info{
+				color:white;
+			}
+				.chat_box .contacts li.hover .watching,
+				.chat_box .contacts li.hover span.shout{
+					color:#888;
+				}
+				.chat_box .contacts li.hover .watching a{
+					color:#555;
+				}
+/*				.chat_box .contacts li.selected .messaging textarea,
+				.chat_box .contacts li.selected .messaging div{
+					width:100%;
+					padding:2px 5px;
+					margin-left:-5px;
+					background-color:white;
+				}
+				.chat_box .contacts li.selected .messaging div{
+					height:100px;
+					overflow:auto;
+				}
+				.chat_box .contacts li.selected .messaging textarea{
+					height:25px;
+					border:none;
+					border-top:1px solid lightgray;
+				}
+*/
+	.chat_box .footnotes ul{
+		margin:10px 5px 8px 5px;
+		float:right;
+	}
+		.chat_box .footnotes li{
+			display:inline;
+		}
+			.chat_box .footnotes li a{
+				color:white;
+				text-decoration:none;
+				border-left:1px solid gray;
+				padding:0 5px;
+				font-size:0.9em;
+			}
+			.chat_box .footnotes li:first-child a{
+				border-left:none;
+			}
+				.chat_box .footnotes li a:hover{
+					color:white;
+					text-decoration:underline;
+				}
+
+
+
+.ConversationControl_Container{
+	color: black;
+	width: 100%;
+	background-color:white;
+}
+	.ConversationControl_Toolbar,
+	.ConversationControl_Participants,
+	.ConversationControl_ParticipantsSeparator,
+	.ConversationControl_Participant,
+	.ConversationTypingControl_LastReceived,
+	.ConversationTypingControl {
+		display: none;
+	}
+	.ConversationControl .InfoBarControl {
+		width: 100%;
+	}
+	.ConversationControl_Content{
+		height: 100px;
+		width: 100%;
+		background-color:#ECECEC;
+		margin-left:-5px;
+		padding:5px;
+	}
+	.ConversationHistoryControl{
+		width: 100%;
+		height: 100px;
+		background-color:#ECECEC;
+		overflow-y:auto;
+		margin-left:-5px;
+		padding:5px;
+		word-wrap:break-word;
+	}
+		.ConversationHistoryControl_Item{
+			display:block;
+			word-wrap:break-word;
+			margin-bottom:5px;
+			color:#666;
+			width:250px;
+		}
+		.ConversationHistoryControl_Item span{
+			word-wrap:break-word;
+		}
+		.ConversationHistoryControl .Text{
+		/*	background:url("http://css.wlmessenger.net/api/3.50.46010/resources/images/ConversationControl/Bullet.png") no-repeat left 3px; */
+			padding-left:11px;
+		}
+			.ConversationHistoryControl_TextContent{
+				margin-bottom: 5px;
+			}
+			.ConversationHistoryControl_TextContent a {
+				color: gray;
+				text-decoration: underline;
+			}
+
+	.ConversationControl_Input{
+		border-top:1px solid gray;
+	}
+		/* typing indicator */
+		.ConversationTypingControl {
+			width: 100%;
+		}
+		
+		.ConversationInputControl{
+			margin:-5px;
+			margin-top:0;
+			padding:2px;
+			background-color:white;
+		}
+			.ConversationInputControl_TextBoxPane{
+			}
+				.ConversationInputControl_TextBox{
+					height:25px;
+					width:100%;
+				}
+					.ConversationInputControl_TextBox iframe{ /** because in V3.6 this refered the element was the iframe */
+						width:inherit;
+						height:inherit;
+					}
+			.ConversationControl .ConversationInputControl_Toolbar{
+				width:100%;
+				text-align:right;
+				margin-top:-1px;
+			}
+				.ConversationControl .ConversationInputControl_Toolbar .ConversationInputControl_Button  {
+					height:16px;
+					width:16px;
+					overflow:none;
+				}
+				.ConversationInputControl_Button_Emoticon {
+					background:url('http://css.wlmessenger.net/api/3.50.46010/resources/images/TileCoreLTR.png') no-repeat scroll -2458px 0 transparent;
+				}
+				.ConversationInputControl_Toolbar .Font {
+					background:url("http://css.wlmessenger.net/api/3.50.46010/resources/images/TileCoreLTR.png") no-repeat scroll -2474px 0 transparent;
+				}
+
+/***********************
+ * CONVERSATION TOOLS
+ ***********************/
+.FontPicker {
+	background-color:#FFFFFF;
+	border:1px solid #D2D2D2;
+	color:#262626;
+	font:10pt/130% 'Segoe UI','Tahoma','Verdana','Sans-Serif';
+	margin-left:1px;
+	margin-top:-3px;
+	padding:5px 7px;
+	width:400px;
+}
+	.FontPicker label{
+		display:block;
+	}
+		.FontPicker label input{
+			margin-left:-3px;
+		}
+	.FontPicker strong{
+		display:block;
+		margin-bottom:3px;
+	}
+	.FontPicker_FontPanel,
+	.FontPicker_StylePanel,
+	.FontPicker_ColorPanel{
+		width:160px;
+		padding:5px;
+	}
+	.FontPicker_ButtonPanel{
+		width:80px;
+		height:100px;
+	}
+	.FontPicker_ExamplePanel,
+	.FontPicker_ColorPanel{
+		height:60px;
+	}
+		.FontPicker_ExamplePanel .FontPicker_Example{
+			margin:5px;padding:5px;border:1px solid #bdd5df;
+		}
+	.FontPicker_Colors,
+	.FontPicker_Fonts{
+		display:block;
+		cursor:default;
+	}
+	.FontPicker_Color{
+		clear:left;
+		float:left;
+		height:17px;
+		width:17px;
+		margin-right:4px;
+	}
+		.FontPicker_Colors_Button,
+		.FontPicker_Fonts_Button{
+			margin-left:4px;
+			margin-right:2px;
+			vertical-align:middle;
+		}
+
+
+.ConversationInputControl_EmoticonPicker  {
+	background-color:#FFFFFF;
+	border:1px solid #D2D2D2;
+	margin-left:1px;
+	margin-top:-3px;
+	padding:2px 0;
+	text-align:left;
+	width:278px;
+}
+	.ConversationInputControl_EmoticonPicker .Emoticon{
+		margin:3px;
+		height:19px;
+		width:19px;
+	}
+
+/***********************
+ * EOF CONVERSATION TOOLS
+ ***********************/
+ 
+ /* Turn on a 13x13 scrollbar */
+.chat_box ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+ 
+/* Turn on single button up on top, and down on bottom */
+.chat_box ::-webkit-scrollbar-button:start:decrement,
+.chat_box ::-webkit-scrollbar-button:end:increment {
+    display: block;
+}
+
+/* Turn off the down area up on top, and up area on bottom */
+.chat_box ::-webkit-scrollbar-button:vertical:start:increment,
+.chat_box ::-webkit-scrollbar-button:vertical:end:decrement {
+    display: none;
+}
+ 
+/* Place The scroll down button at the bottom */
+.chat_box ::-webkit-scrollbar-button:vertical:increment {
+    border:5px solid transparent;
+    border-bottom:none;
+    border-top:5px solid gray;
+}
+ 
+/* Place The scroll up button at the up */
+.chat_box ::-webkit-scrollbar-button:vertical:decrement {
+    margin:2px;
+    border:5px solid transparent;
+    border-top:none;
+    border-bottom:5px solid gray;
+}
+ 
+ 
+/* The thumb itself */
+.chat_box ::-webkit-scrollbar-thumb:vertical {
+    background-color: gray;
+}
